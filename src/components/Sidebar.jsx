@@ -112,19 +112,13 @@ export default function Sidebar() {
               </tbody>
             </table>
 
-            <div className="space-y-2">
-              <p className="text-xs font-medium text-gray-500 mb-1">신고하기</p>
-              {['소화기 없음', '소화기 부족', '함 파손', '기타'].map((type) => (
-                <button
-                  key={type}
-                  className="w-full text-left text-xs px-3 py-2 rounded-lg border border-gray-200
-                    hover:bg-red-50 hover:border-red-300 transition-colors"
-                  onClick={() => console.log('신고 유형:', type, selectedItem.id)}
-                >
-                  {type}
-                </button>
-              ))}
-            </div>
+            <Link
+              to={`/report/${selectedItem.id}`}
+              className="block w-full text-center text-sm font-semibold py-2.5 rounded-xl
+                bg-red-600 text-white hover:bg-red-700 transition-colors"
+            >
+              이상 신고하기
+            </Link>
           </div>
 
         ) : (
