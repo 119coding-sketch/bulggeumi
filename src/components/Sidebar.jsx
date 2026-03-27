@@ -24,13 +24,13 @@ export default function Sidebar() {
     selectedItem, selectItem, clearSelection,
     isLoading, error,
     filterStation, filterCenter, setFilterStation, setFilterCenter,
-    getFiltered,
+    getFiltered, getCenterList,
   } = useMapStore()
 
   const filtered = getFiltered()
 
-  // 선택된 소방서의 센터 목록
-  const centerList = filterStation === '전체' ? [] : (fireStations[filterStation] ?? [])
+  // 실제 로드된 데이터 기반 센터 목록
+  const centerList = getCenterList(filterStation)
 
   return (
     <aside className="w-72 h-full bg-white shadow-lg flex flex-col overflow-hidden">

@@ -30,6 +30,18 @@ const useMapStore = create((set, get) => ({
   /** 센터 필터 변경 */
   setFilterCenter: (name) => set({ filterCenter: name }),
 
+  /** 선택된 소방서의 실제 데이터 기반 센터 목록 */
+  getCenterList: (station) => {
+    const { extinguishers } = get()
+    const set_ = new Set(
+      extinguishers
+        .filter((e) => e.station === station)
+        .map((e) => e.center)
+        .filter(Boolean)
+    )
+    return Array.from(set_)
+  },
+
   /** 현재 필터가 적용된 소화기 목록 */
   getFiltered: () => {
     const { extinguishers, filterStation, filterCenter } = get()

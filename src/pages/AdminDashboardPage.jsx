@@ -32,7 +32,7 @@ function StatusBadge({ status }) {
 export default function AdminDashboardPage() {
   const navigate  = useNavigate()
   const { station: myStation, center: myCenter, logout } = useAuthStore()
-  const { extinguishers } = useMapStore()
+  const { extinguishers, getCenterList } = useMapStore()
   const { reports, updateStatus } = useReportStore()
 
   // 소방서 필터 — 기본값: 로그인한 소방서
@@ -40,8 +40,8 @@ export default function AdminDashboardPage() {
   // 센터 필터 — 기본값: 로그인한 센터
   const [filterCenter, setFilterCenter] = useState(myCenter ?? '전체')
 
-  // 선택된 소방서의 센터 목록
-  const centerList = filterStation === '전체' ? [] : (fireStations[filterStation] ?? [])
+  // 실제 로드된 데이터 기반 센터 목록
+  const centerList = getCenterList(filterStation)
 
   // 소방서 바뀌면 센터 전체로 초기화
   function handleStationChange(name) {
