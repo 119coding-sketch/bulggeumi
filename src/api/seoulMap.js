@@ -10,9 +10,10 @@ const SEOUL_CENTER_Y = 37.566610
 // 서울 전체 커버 반경 50km
 const SEOUL_RADIUS = 50000
 
-// Vite 개발 프록시: /seoul-api → https://map.seoul.go.kr (Referer 자동 설정)
+// 개발: Vite 프록시 /api/seoul-proxy → map.seoul.go.kr (Referer 자동 설정)
+// 배포: Vercel 서버리스 함수 api/seoul-proxy/[...path].js 가 처리
 const themeApi = axios.create({
-  baseURL: '/seoul-api',
+  baseURL: '/api/seoul-proxy',
   timeout: 15000,
 })
 

@@ -6,10 +6,10 @@ export default defineConfig({
   server: {
     proxy: {
       // 스마트서울맵 API 프록시 — Referer 헤더를 서울맵 도메인으로 고정
-      '/seoul-api': {
+      '/api/seoul-proxy': {
         target: 'https://map.seoul.go.kr',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/seoul-api/, ''),
+        rewrite: (path) => path.replace(/^\/api\/seoul-proxy/, ''),
         headers: {
           Referer: 'https://map.seoul.go.kr/smgis2/openApi',
         },
