@@ -75,21 +75,43 @@ async function fetchPage(page_no) {
 }
 
 export async function fetchExtinguishers() {
-  // 1페이지로 전체 건수 확인
+  // 1페이지 먼저 가져오고 헤더에서 총 건수 추출
   const first = await fetchPage(1)
-  const totalCount = parseInt(first.header?.totalCount ?? first.header?.total_count ?? 0, 10)
+  console.log('[불끄미] API 헤더:', first.header)
+
+  // 헤더 필드명이 API마다 다를 수 있어 여러 후보 탐색
+  const headerObj = first.header ?? {}
+  const totalCount = parseInt(
+    headerObj.totalCount ?? headerObj.total_count ?? headerObj.TOTAL_COUNT ??
+    headerObj.totalCnt ?? headerObj.total_cnt ?? headerObj.count ?? 0,
+    10
+  )
   const pageSize = 1000
-  const totalPages = Math.ceil(totalCount / pageSize)
+  // totalCount 파싱 실패 시: 1000개 꽉 찼으면 다음 페이지 있다고 가정
+  const firstBody = Array.isArray(first.body) ? first.body : []
+  const totalPages = totalCount > 0
+    ? Math.ceil(totalCount / pageSize)
+    : (firstBody.length >= pageSize ? 999 : 1) // 안전하게 최대 999페이지까지
 
-  const allItems = Array.isArray(first.body) ? [...first.body] : []
+  const allItems = [...firstBody]
 
-  // 2페이지부터 나머지 페이지 병렬 요청
+  // 2페이지부터 병렬 요청 (10페이지씩 묶어서)
   if (totalPages > 1) {
-    const rest = await Promise.all(
-      Array.from({ length: totalPages - 1 }, (_, i) => fetchPage(i + 2))
-    )
-    for (const d of rest) {
-      if (Array.isArray(d.body)) allItems.push(...d.body)
+    const BATCH = 10
+    for (let start = 2; start <= totalPages; start += BATCH) {
+      const end = Math.min(start + BATCH - 1, totalPages)
+      const batch = await Promise.all(
+        Array.from({ length: end - start + 1 }, (_, i) => fetchPage(start + i))
+      )
+      let hasItems = false
+      for (const d of batch) {
+        const items = Array.isArray(d.body) ? d.body : []
+        if (items.length > 0) hasItems = true
+        allItems.push(...items)
+        // 데이터가 page_size보다 적으면 마지막 페이지
+        if (items.length < pageSize) { break }
+      }
+      if (!hasItems) break
     }
   }
 
