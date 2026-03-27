@@ -18,19 +18,17 @@ const GU_TO_STATION = {
 
 /**
  * COT_CONTS_ID를 파싱해 소방서/센터명을 반환합니다.
- * 형식1: "72-253-2021-001234" → 구코드-센터코드-연도-번호
- * 형식2: "공용용-72" → 공용 소화기 (구코드만)
+ * 형식1: "83-251-2021-001234" → 구코드-센터코드-연도-번호
+ * 형식2: "공용용-72" 등 → 공용 소화기
  *
- * 센터코드 규칙:
- *   base = (구코드 - 71) * 10 + 240
- *   base+0 = 현장대응단, base+1 = 공용, base+2~= 안전센터 순서
+ * 센터코드 규칙: 250=현장대응단, 251=두번째센터, 252=세번째... (구코드 무관)
  */
 function resolveStationCenter(contsId) {
   if (!contsId) return { station: '', center: '' }
 
   const parts = String(contsId).split('-')
 
-  // 공용 형식: "공용용-72" 등
+  // 공용 형식: "공용용-72" 등 (첫 부분이 숫자가 아닌 경우)
   if (isNaN(parseInt(parts[0], 10))) {
     const guCode = parseInt(parts[1], 10)
     const station = GU_TO_STATION[guCode] ?? ''
@@ -42,13 +40,8 @@ function resolveStationCenter(contsId) {
   const station = GU_TO_STATION[guCode]
   if (!station) return { station: '', center: '' }
 
-  const base = (guCode - 71) * 10 + 240
-  const offset = centerCode - base
-
-  if (offset === 1) return { station, center: '공용' }
-
-  // offset 0 → 현장대응단(index 0), offset 2+ → 안전센터(index offset-1)
-  const centerIdx = offset === 0 ? 0 : offset - 1
+  // 250 = index 0(현장대응단), 251 = index 1, 252 = index 2 ...
+  const centerIdx = centerCode - 250
   const centers = fireStations[station] ?? []
   const center = centers[centerIdx] ?? `미확인(${centerCode})`
   return { station, center }
@@ -82,12 +75,7 @@ function extractGu(address) {
   return (candidate.endsWith('구') || candidate.endsWith('군')) ? candidate : ''
 }
 
-let _debugLogged = false
 function mapThemeItem(item) {
-  if (!_debugLogged) {
-    console.log('[불끄미 디버그] 원본 API 항목 샘플:', JSON.stringify(item, null, 2))
-    _debugLogged = true
-  }
   const address = item.COT_ADDR_FULL_NEW || item.COT_ADDR_FULL_OLD || ''
   const { station, center } = resolveStationCenter(item.COT_CONTS_ID)
   return {
