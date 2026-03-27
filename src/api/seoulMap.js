@@ -10,10 +10,10 @@ const SEOUL_CENTER_Y = 37.566610
 // 서울 전체 커버 반경 50km
 const SEOUL_RADIUS = 50000
 
-// 개발: Vite 프록시 /api/seoul-proxy → map.seoul.go.kr (Referer 자동 설정)
-// 배포: Vercel 서버리스 함수 api/seoul-proxy/[...path].js 가 처리
+// 개발: Vite 프록시 /api/seoulProxy → map.seoul.go.kr (Referer 자동 설정)
+// 배포: Vercel 서버리스 함수 api/seoulProxy.js 가 처리
 const themeApi = axios.create({
-  baseURL: '/api/seoul-proxy',
+  baseURL: '/api/seoulProxy',
   timeout: 15000,
 })
 
@@ -53,23 +53,21 @@ function mapThemeItem(item) {
  * - 서울 중심 50km 반경, 최대 1000개
  */
 async function fetchPage(page_no) {
-  const { data } = await themeApi.get(
-    `/openapi/v5/${THEME_KEY}/private/themes/contents/ko`,
-    {
-      params: {
-        theme_id: THEME_ID,
-        page_size: 1000,
-        page_no,
-        search_type: 0,
-        coord_x: SEOUL_CENTER_X,
-        coord_y: SEOUL_CENTER_Y,
-        distance: SEOUL_RADIUS,
-        search_name: '',
-        content_id: '',
-        subcate_id: '',
-      },
-    }
-  )
+  const { data } = await themeApi.get('', {
+    params: {
+      apiPath: `openapi/v5/${THEME_KEY}/private/themes/contents/ko`,
+      theme_id: THEME_ID,
+      page_size: 1000,
+      page_no,
+      search_type: 0,
+      coord_x: SEOUL_CENTER_X,
+      coord_y: SEOUL_CENTER_Y,
+      distance: SEOUL_RADIUS,
+      search_name: '',
+      content_id: '',
+      subcate_id: '',
+    },
+  })
   if (data?.header?.resultCode !== '200') {
     throw new Error(`서울맵 API 오류: ${data?.header?.resultMessage}`)
   }

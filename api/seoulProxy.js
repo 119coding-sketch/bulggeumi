@@ -1,15 +1,10 @@
 // Vercel 서버리스 함수 — 스마트서울맵 API 프록시
+// 브라우저에서 직접 설정 불가한 Referer 헤더를 서버에서 붙여 전달
 import axios from 'axios'
 
 export default async function handler(req, res) {
-  const pathSegments = Array.isArray(req.query.path) ? req.query.path : [req.query.path]
-  const { path: _, ...queryParams } = req.query
-
-  const targetPath = pathSegments.join('/')
-  const targetUrl = `https://map.seoul.go.kr/${targetPath}`
-
-  console.log('[seoul-proxy] 요청 URL:', targetUrl)
-  console.log('[seoul-proxy] 쿼리 파라미터:', queryParams)
+  const { apiPath, ...queryParams } = req.query
+  const targetUrl = `https://map.seoul.go.kr/${apiPath}`
 
   try {
     const response = await axios.get(targetUrl, {
@@ -22,7 +17,7 @@ export default async function handler(req, res) {
     })
     res.status(200).json(response.data)
   } catch (err) {
-    console.error('[seoul-proxy] 오류:', err.response?.status, err.response?.data ?? err.message)
+    console.error('[seoulProxy] 오류:', err.response?.status, err.message)
     res.status(err.response?.status ?? 500).json({
       error: err.message,
       detail: err.response?.data,
