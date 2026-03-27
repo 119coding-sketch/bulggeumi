@@ -17,7 +17,7 @@ const STATUS_STYLE = {
 
 export default function Marker({ item }) {
   const { selectItem } = useMapStore()
-  const { lat, lng, name, address, type, capacity, installedAt, status } = item
+  const { lat, lng, id, name, address, type, capacity, installedAt, status } = item
   const style = STATUS_STYLE[status] ?? { bg: 'bg-gray-100', text: 'text-gray-600' }
 
   return (
@@ -30,6 +30,7 @@ export default function Marker({ item }) {
         <table className="text-xs w-full">
           <tbody>
             {[
+              ['코드', id],
               ['주소', address],
               ['종류', type],
               ['용량', capacity],

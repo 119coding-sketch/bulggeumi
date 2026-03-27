@@ -1,3 +1,4 @@
+import React from 'react'
 import { Link } from 'react-router-dom'
 import useMapStore from '../store/useMapStore'
 import fireStations from '../data/fireStations'
@@ -27,7 +28,17 @@ export default function Sidebar() {
     getFiltered, getCenterList,
   } = useMapStore()
 
-  const filtered = getFiltered()
+  const [searchQuery, setSearchQuery] = React.useState('')
+
+  const filtered = getFiltered().filter((e) => {
+    if (!searchQuery.trim()) return true
+    const q = searchQuery.trim().toLowerCase()
+    return (
+      String(e.id).toLowerCase().includes(q) ||
+      e.name.toLowerCase().includes(q) ||
+      e.address.toLowerCase().includes(q)
+    )
+  })
 
   // 실제 로드된 데이터 기반 센터 목록
   const centerList = getCenterList(filterStation)
@@ -83,6 +94,16 @@ export default function Sidebar() {
             </select>
           </div>
         )}
+
+        {/* 검색창 */}
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="코드·명칭·주소 검색 (예: 17_1)"
+          className="w-full text-sm border border-gray-200 rounded-lg px-2 py-1.5 bg-white
+            focus:outline-none focus:border-red-400 text-gray-700 placeholder:text-gray-300"
+        />
 
         {/* 결과 수 / 로딩 진행 */}
         {isLoading ? (
@@ -140,6 +161,7 @@ export default function Sidebar() {
             <table className="text-xs w-full mb-4">
               <tbody>
                 {[
+                  ['코드',  selectedItem.id],
                   ['종류',  selectedItem.type],
                   ['용량',  selectedItem.capacity],
                   ['설치일', selectedItem.installedAt],
