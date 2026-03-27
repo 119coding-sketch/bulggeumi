@@ -8,27 +8,21 @@ const THEME_ID = '11103379'
 // 서울 중심 좌표 (서울시청 기준)
 const SEOUL_CENTER_X = 126.978388
 const SEOUL_CENTER_Y = 37.566610
-// 서울 전체 커버 반경 50km
 const SEOUL_RADIUS = 50000
 
-// 개발: Vite 프록시 /api/seoulProxy → map.seoul.go.kr (Referer 자동 설정)
-// 배포: Vercel 서버리스 함수 api/seoulProxy.js 가 처리
+// 개발: Vite 프록시 /api/seoulProxy → map.seoul.go.kr
+// 배포: Vercel 서버리스 함수 api/seoulProxy.js
 const themeApi = axios.create({
   baseURL: '/api/seoulProxy',
-  timeout: 15000,
+  timeout: 20000,
 })
 
-/**
- * 스마트서울맵 테마 콘텐츠 응답 → 앱 데이터 형식으로 변환
- */
-/**
- * 주소 문자열에서 자치구 이름을 추출합니다.
- * 예: "서울특별시 마포구 상암동 ..." → "마포구"
- */
+const CACHE_KEY = 'bulggeumi_extinguishers'
+const CACHE_TTL = 30 * 60 * 1000 // 30분
+
 function extractGu(address) {
   if (!address) return ''
   const parts = address.split(' ')
-  // 두 번째 토큰이 "XX구" 또는 "XX군" 형태인 경우
   const candidate = parts[1] ?? ''
   return (candidate.endsWith('구') || candidate.endsWith('군')) ? candidate : ''
 }
@@ -52,10 +46,6 @@ function mapThemeItem(item) {
   }
 }
 
-/**
- * 보이는소화기 목록을 스마트서울맵 테마 API로 가져옵니다.
- * - 서울 중심 50km 반경, 최대 1000개
- */
 async function fetchPage(page_no) {
   const { data } = await themeApi.get('', {
     params: {
@@ -78,84 +68,56 @@ async function fetchPage(page_no) {
   return data
 }
 
-const CACHE_KEY = 'bulggeumi_extinguishers'
-const CACHE_TTL = 30 * 60 * 1000 // 30분
-
-export async function fetchExtinguishers() {
-  // sessionStorage 캐시 확인 (탭 닫기 전까지 유지, 30분 TTL)
+/**
+ * 보이는소화기 전체 목록을 가져옵니다.
+ * @param {(items: object[]) => void} onFirstPage - 1페이지 도착 즉시 호출되는 콜백
+ */
+export async function fetchExtinguishers(onFirstPage) {
+  // sessionStorage 캐시 확인
   try {
     const cached = sessionStorage.getItem(CACHE_KEY)
     if (cached) {
       const { data, ts } = JSON.parse(cached)
       if (Date.now() - ts < CACHE_TTL) return data
     }
-  } catch { /* sessionStorage 사용 불가 시 무시 */ }
+  } catch { /* 무시 */ }
 
-  // 1페이지 먼저 가져오고 헤더에서 총 건수 추출
+  // 1페이지 먼저 요청
   const first = await fetchPage(1)
-  console.log('[불끄미] 헤더 전체:', JSON.stringify(first.header))
+  const h = first.header ?? {}
+  const totalPages = parseInt(h.PAGE_COUNT ?? h.page_count ?? 1, 10)
+  const firstItems = (Array.isArray(first.body) ? first.body : []).map(mapThemeItem)
 
-  // 헤더 필드명이 API마다 다를 수 있어 여러 후보 탐색
-  const headerObj = first.header ?? {}
-  const totalCount = parseInt(
-    headerObj.totalCount ?? headerObj.total_count ?? headerObj.TOTAL_COUNT ??
-    headerObj.totalCnt ?? headerObj.total_cnt ?? headerObj.count ?? 0,
-    10
-  )
-  const pageSize = 1000
-  // totalCount 파싱 실패 시: 1000개 꽉 찼으면 다음 페이지 있다고 가정
-  const firstBody = Array.isArray(first.body) ? first.body : []
-  const totalPages = totalCount > 0
-    ? Math.ceil(totalCount / pageSize)
-    : (firstBody.length >= pageSize ? 999 : 1) // 안전하게 최대 999페이지까지
+  // 1페이지 데이터 즉시 화면에 반영
+  if (onFirstPage) onFirstPage(firstItems)
 
-  const allItems = [...firstBody]
-
-  // 2페이지부터 병렬 요청 (10페이지씩 묶어서)
+  // 나머지 페이지 전부 한 번에 병렬 요청
+  let restItems = []
   if (totalPages > 1) {
-    const BATCH = 10
-    for (let start = 2; start <= totalPages; start += BATCH) {
-      const end = Math.min(start + BATCH - 1, totalPages)
-      const batch = await Promise.all(
-        Array.from({ length: end - start + 1 }, (_, i) => fetchPage(start + i))
-      )
-      let hasItems = false
-      for (const d of batch) {
-        const items = Array.isArray(d.body) ? d.body : []
-        if (items.length > 0) hasItems = true
-        allItems.push(...items)
-        // 데이터가 page_size보다 적으면 마지막 페이지
-        if (items.length < pageSize) { break }
-      }
-      if (!hasItems) break
-    }
+    const results = await Promise.allSettled(
+      Array.from({ length: totalPages - 1 }, (_, i) => fetchPage(i + 2))
+    )
+    restItems = results
+      .filter((r) => r.status === 'fulfilled')
+      .flatMap((r) => Array.isArray(r.value.body) ? r.value.body.map(mapThemeItem) : [])
   }
 
-  const result = allItems.map(mapThemeItem)
+  const all = [...firstItems, ...restItems]
 
-  // sessionStorage에 캐시 저장
+  // 캐시 저장
   try {
-    sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data: result, ts: Date.now() }))
-  } catch { /* 저장 실패 시 무시 */ }
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data: all, ts: Date.now() }))
+  } catch { /* 무시 */ }
 
-  return result
+  return all
 }
 
-/**
- * 특정 소화기함 상세 정보를 가져옵니다.
- * (loadedItems에서 필터링 — 별도 API 호출 없음)
- */
 export async function fetchExtinguisherDetail(id) {
   const all = await fetchExtinguishers()
   return all.find((item) => item.id === id) ?? null
 }
 
-/**
- * 소화기함 신고를 제출합니다.
- * @param {{ extinguisherId: string, type: string, memo: string }} payload
- */
 export async function submitReport(payload) {
-  // TODO: 실제 신고 API 연동 전까지 시뮬레이션
   console.warn('[불끄미] 신고 제출 시뮬레이션:', payload)
   return { ok: true, id: Date.now() }
 }
