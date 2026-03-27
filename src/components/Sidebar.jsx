@@ -22,7 +22,7 @@ function StatusBadge({ status }) {
 export default function Sidebar() {
   const {
     selectedItem, selectItem, clearSelection,
-    isLoading, error,
+    isLoading, loadedCount, totalCount, error,
     filterStation, filterCenter, setFilterStation, setFilterCenter,
     getFiltered, getCenterList,
   } = useMapStore()
@@ -84,10 +84,25 @@ export default function Sidebar() {
           </div>
         )}
 
-        {/* 결과 수 */}
-        <p className="text-xs text-gray-400">
-          {isLoading ? '불러오는 중...' : `${filtered.length.toLocaleString()}개 표시`}
-        </p>
+        {/* 결과 수 / 로딩 진행 */}
+        {isLoading ? (
+          <div className="flex items-center gap-2">
+            <svg className="animate-spin h-3.5 w-3.5 text-red-500 shrink-0" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+            </svg>
+            <p className="text-xs text-gray-400">
+              소화기 불러오는 중
+              {totalCount > 0 && (
+                <span className="ml-1 font-medium text-gray-500">
+                  {loadedCount.toLocaleString()} / {totalCount.toLocaleString()}
+                </span>
+              )}
+            </p>
+          </div>
+        ) : (
+          <p className="text-xs text-gray-400">{filtered.length.toLocaleString()}개 표시</p>
+        )}
       </div>
 
       {/* 오류 */}
@@ -95,7 +110,19 @@ export default function Sidebar() {
         <div className="px-4 py-2 text-xs text-red-500 border-b bg-red-50">오류: {error}</div>
       )}
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto relative">
+
+        {/* 전체 로딩 오버레이 (데이터 없을 때만) */}
+        {isLoading && loadedCount === 0 && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-white z-10 gap-3">
+            <svg className="animate-spin h-8 w-8 text-red-500" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+            </svg>
+            <p className="text-sm text-gray-500 font-medium">보이는소화기 불러오는 중</p>
+            <p className="text-xs text-gray-400">잠시만 기다려 주세요</p>
+          </div>
+        )}
 
         {/* 상세 뷰 */}
         {selectedItem ? (

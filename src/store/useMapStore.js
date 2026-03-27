@@ -1,25 +1,26 @@
 import { create } from 'zustand'
-import { fetchExtinguishersByStation } from '../api/seoulMap'
+import { fetchExtinguishers } from '../api/seoulMap'
 
 const useMapStore = create((set, get) => ({
   extinguishers: [],
   selectedItem: null,
   isLoading: false,
+  loadedCount: 0,   // 현재까지 불러온 개수
+  totalCount: 0,    // 전체 개수
   error: null,
 
   // 지도 필터 상태 (소방서는 첫 번째로 기본 선택)
   filterStation: '종로소방서',
   filterCenter: '전체',
 
-  /** 선택된 소방서의 소화기 목록을 불러옵니다. 1페이지 도착 즉시 화면에 반영합니다. */
+  /** API에서 소화기 전체 목록을 불러옵니다. 페이지마다 화면에 반영합니다. */
   fetchExtinguishers: async () => {
-    const { filterStation } = get()
-    set({ isLoading: true, error: null, extinguishers: [] })
+    set({ isLoading: true, error: null, loadedCount: 0, totalCount: 0 })
     try {
-      const data = await fetchExtinguishersByStation(filterStation, (firstPage) => {
-        set({ extinguishers: firstPage })
+      const data = await fetchExtinguishers((items, total) => {
+        set({ extinguishers: items, loadedCount: items.length, totalCount: total })
       })
-      set({ extinguishers: Array.isArray(data) ? data : [] })
+      set({ extinguishers: Array.isArray(data) ? data : [], loadedCount: data.length })
     } catch (err) {
       set({ error: err.message, extinguishers: [] })
     } finally {
@@ -27,20 +28,8 @@ const useMapStore = create((set, get) => ({
     }
   },
 
-  /** 소방서 필터 변경 (센터는 전체로 초기화하고 해당 소방서 데이터 재요청) */
-  setFilterStation: async (name) => {
-    set({ filterStation: name, filterCenter: '전체', extinguishers: [], isLoading: true, error: null })
-    try {
-      const data = await fetchExtinguishersByStation(name, (firstPage) => {
-        set({ extinguishers: firstPage })
-      })
-      set({ extinguishers: Array.isArray(data) ? data : [] })
-    } catch (err) {
-      set({ error: err.message, extinguishers: [] })
-    } finally {
-      set({ isLoading: false })
-    }
-  },
+  /** 소방서 필터 변경 (센터는 전체로 초기화) */
+  setFilterStation: (name) => set({ filterStation: name, filterCenter: '전체' }),
 
   /** 센터 필터 변경 */
   setFilterCenter: (name) => set({ filterCenter: name }),
