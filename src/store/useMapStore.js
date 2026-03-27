@@ -7,9 +7,8 @@ const useMapStore = create((set, get) => ({
   isLoading: false,
   error: null,
 
-  // 지도 필터 상태
-  filterGu: '전체',
-  filterStation: '전체',
+  // 지도 필터 상태 (소방서는 첫 번째로 기본 선택)
+  filterStation: '종로소방서',
   filterCenter: '전체',
 
   /** API에서 소화기 목록을 불러옵니다. */
@@ -25,27 +24,16 @@ const useMapStore = create((set, get) => ({
     }
   },
 
-  /** 자치구 필터 변경 */
-  setFilterGu: (name) => set({ filterGu: name }),
-
   /** 소방서 필터 변경 (센터는 전체로 초기화) */
   setFilterStation: (name) => set({ filterStation: name, filterCenter: '전체' }),
 
   /** 센터 필터 변경 */
   setFilterCenter: (name) => set({ filterCenter: name }),
 
-  /** 로드된 데이터에서 자치구 목록을 반환합니다 (가나다순) */
-  getGuList: () => {
-    const { extinguishers } = get()
-    const set_ = new Set(extinguishers.map((e) => e.gu).filter(Boolean))
-    return Array.from(set_).sort((a, b) => a.localeCompare(b, 'ko'))
-  },
-
   /** 현재 필터가 적용된 소화기 목록 */
   getFiltered: () => {
-    const { extinguishers, filterGu, filterStation, filterCenter } = get()
+    const { extinguishers, filterStation, filterCenter } = get()
     return extinguishers.filter((e) =>
-      (filterGu      === '전체' || e.gu      === filterGu) &&
       (filterStation === '전체' || e.station === filterStation) &&
       (filterCenter  === '전체' || e.center  === filterCenter)
     )

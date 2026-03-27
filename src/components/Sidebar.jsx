@@ -23,13 +23,11 @@ export default function Sidebar() {
   const {
     selectedItem, selectItem, clearSelection,
     isLoading, error,
-    filterGu, setFilterGu,
     filterStation, filterCenter, setFilterStation, setFilterCenter,
-    getFiltered, getGuList,
+    getFiltered,
   } = useMapStore()
 
   const filtered = getFiltered()
-  const guList = getGuList()
 
   // 선택된 소방서의 센터 목록
   const centerList = filterStation === '전체' ? [] : (fireStations[filterStation] ?? [])
@@ -53,22 +51,6 @@ export default function Sidebar() {
 
       {/* 필터 패널 */}
       <div className="border-b bg-gray-50 px-3 py-3 space-y-2">
-        {/* 자치구 선택 */}
-        <div>
-          <label className="text-xs text-gray-400 font-medium mb-1 block">자치구</label>
-          <select
-            value={filterGu}
-            onChange={(e) => setFilterGu(e.target.value)}
-            className="w-full text-sm border border-gray-200 rounded-lg px-2 py-1.5 bg-white
-              focus:outline-none focus:border-red-400 text-gray-700"
-          >
-            <option value="전체">전체 자치구</option>
-            {guList.map((name) => (
-              <option key={name} value={name}>{name}</option>
-            ))}
-          </select>
-        </div>
-
         {/* 소방서 선택 */}
         <div>
           <label className="text-xs text-gray-400 font-medium mb-1 block">소방서</label>
@@ -78,7 +60,6 @@ export default function Sidebar() {
             className="w-full text-sm border border-gray-200 rounded-lg px-2 py-1.5 bg-white
               focus:outline-none focus:border-red-400 text-gray-700"
           >
-            <option value="전체">전체 소방서</option>
             {ALL_STATIONS.map((name) => (
               <option key={name} value={name}>{name}</option>
             ))}

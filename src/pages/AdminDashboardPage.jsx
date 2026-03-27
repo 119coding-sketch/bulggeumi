@@ -36,7 +36,7 @@ export default function AdminDashboardPage() {
   const { reports, updateStatus } = useReportStore()
 
   // 소방서 필터 — 기본값: 로그인한 소방서
-  const [filterStation, setFilterStation] = useState(myStation ?? '전체')
+  const [filterStation, setFilterStation] = useState(myStation ?? ALL_STATIONS[0])
   // 센터 필터 — 기본값: 로그인한 센터
   const [filterCenter, setFilterCenter] = useState(myCenter ?? '전체')
 
@@ -53,8 +53,8 @@ export default function AdminDashboardPage() {
   const myExtinguisherIds = new Set(
     extinguishers
       .filter((e) =>
-        (filterStation === '전체' || e.station === filterStation) &&
-        (filterCenter  === '전체' || e.center  === filterCenter)
+        e.station === filterStation &&
+        (filterCenter === '전체' || e.center === filterCenter)
       )
       .map((e) => e.id)
   )
@@ -116,17 +116,6 @@ export default function AdminDashboardPage() {
             소방서 선택
           </p>
           <div className="flex flex-wrap gap-1.5">
-            {/* 전체 버튼 */}
-            <button
-              onClick={() => handleStationChange('전체')}
-              className={`px-3 py-1.5 rounded-lg text-sm border transition-colors font-medium
-                ${filterStation === '전체'
-                  ? 'bg-red-600 text-white border-red-600'
-                  : 'bg-white border-gray-200 text-gray-600 hover:border-red-300'
-                }`}
-            >
-              전체
-            </button>
             {ALL_STATIONS.map((name) => (
               <button
                 key={name}
@@ -182,17 +171,11 @@ export default function AdminDashboardPage() {
         <div className="flex items-center gap-2 mb-4">
           <span className="text-sm text-gray-500">
             현재 보기:
-            <span className="ml-1 font-semibold text-gray-800">
-              {filterStation === '전체' ? '전체 소방서' : filterStation}
+            <span className="ml-1 font-semibold text-gray-800">{filterStation}</span>
+            <span className="mx-1 text-gray-300">›</span>
+            <span className="font-semibold text-gray-800">
+              {filterCenter === '전체' ? '전체 센터' : filterCenter}
             </span>
-            {filterStation !== '전체' && (
-              <>
-                <span className="mx-1 text-gray-300">›</span>
-                <span className="font-semibold text-gray-800">
-                  {filterCenter === '전체' ? '전체 센터' : filterCenter}
-                </span>
-              </>
-            )}
           </span>
         </div>
 
