@@ -32,9 +32,10 @@ src/
 ├── api/
 │   └── seoulMap.js            # 스마트서울맵 API (fetchExtinguishers, resolveStationCenter)
 ├── components/
-│   ├── Map.jsx                # 지도 컨테이너 (CartoDB Light 타일)
+│   ├── Map.jsx                # 지도 컨테이너 (CartoDB Light 타일) + FlyToController
 │   ├── Marker.jsx             # 지도 마커 + 팝업
-│   └── Sidebar.jsx            # 소방서/센터 필터 + 목록/상세 패널
+│   ├── SearchCard.jsx         # 지도 위 오버레이 카드 (소방서/센터 필터 + 소화기 검색 + 핀 기능)
+│   └── Sidebar.jsx            # 목록/상세 패널 (검색 모드 시 핀 목록 표시)
 ├── data/
 │   ├── fireStations.js        # 서울시 25개 소방서 → 안전센터 계층 데이터
 │   └── reports.js             # 더미 신고 데이터 5개
@@ -45,7 +46,7 @@ src/
 │   ├── AdminDashboardPage.jsx # 담당자 대시보드 (/admin/dashboard)
 │   └── AdminContactsPage.jsx  # 연락처 관리 (/admin/contacts)
 ├── store/
-│   ├── useMapStore.js         # 소화기함 목록 + 필터 (소방서/센터, 자치구 없음)
+│   ├── useMapStore.js         # 소화기함 목록 + 필터 + 검색/핀 + flyTo + 로딩 진행률
 │   ├── useAuthStore.js        # 로그인 상태 (station, center)
 │   ├── useReportStore.js      # 신고 목록 + 상태 업데이트
 │   └── useContactStore.js     # 센터별 연락처 (localStorage persist)
@@ -119,9 +120,10 @@ api/
 7. ✅ 실제 API 연결 (스마트서울맵, Vercel 프록시)
 8. ✅ Vercel 배포
 9. ✅ 연락처 관리 페이지 (센터별 전화/이메일)
-10. ⬜ 이메일 알림 (Resend 연동)
-11. ⬜ SMS 알림 (알리고 연동)
-12. ⬜ 연락처 클라우드 저장 (Vercel KV)
+10. ✅ SearchCard — 소방서/센터 필터 + 소화기 검색 + 핀(pin) 기능
+11. ⬜ 이메일 알림 (Resend 연동)
+12. ⬜ SMS 알림 (알리고 연동)
+13. ⬜ 연락처 클라우드 저장 (Vercel KV)
 
 ## 코딩 규칙
 - 컴포넌트는 함수형으로 작성
@@ -149,3 +151,9 @@ api/
 - [2026-03-27] 연락처 관리 페이지 추가 (/admin/contacts), localStorage 저장
 - [2026-03-27] 전화번호 자동 하이픈 포맷 (숫자 입력 → 010-xxxx-xxxx)
 - [2026-03-27] Vercel 서버리스 프록시 api/seoulProxy.js 로 교체 (catch-all 파일명 문제 해결)
+- [2026-03-28] SearchCard.jsx 신규 추가 — 지도 위 오버레이 카드 (소방서/센터 드롭다운 필터 + 코드·명칭·주소 텍스트 검색)
+- [2026-03-28] 소화기 핀(pin) 기능 — 검색에서 선택한 항목을 지도에 누적 표시, 사이드바에서 X로 개별 제거, "검색 초기화"로 전체 해제
+- [2026-03-28] flyTo 기능 — 소화기 선택 시 지도가 해당 위치로 부드럽게 이동 (FlyToController, zoom 17)
+- [2026-03-28] 로딩 진행률 표시 — loadedCount/totalCount 실시간 업데이트 (SearchCard 하단 + Sidebar 스피너)
+- [2026-03-28] Sidebar에서 소방서/센터 필터 UI 제거 → SearchCard로 이전, Sidebar는 목록/상세 전용으로 단순화
+- [2026-03-28] 사이드바 목록에 소화기 코드(id) 폰트모노 표시 추가

@@ -57,6 +57,24 @@ const useMapStore = create((set, get) => ({
 
   selectItem: (item) => set({ selectedItem: item }),
   clearSelection: () => set({ selectedItem: null }),
+
+  // 검색 결과 저장 및 핀 목록
+  searchResults: [],   // 마지막 검색 결과 목록
+  pinnedItems: [],     // 누적 선택된 항목들 (지도에 표시)
+  setSearchResults: (items) => set({ searchResults: items }),
+  pinItem: (item) => set((state) => {
+    const already = state.pinnedItems.some((p) => p.id === item.id)
+    return already ? {} : { pinnedItems: [...state.pinnedItems, item] }
+  }),
+  unpinItem: (id) => set((state) => ({
+    pinnedItems: state.pinnedItems.filter((p) => p.id !== id),
+  })),
+  clearSearch: () => set({ searchResults: [], pinnedItems: [] }),
+
+  // 지도 flyTo 요청 (Map 컴포넌트가 감지 후 초기화)
+  flyTarget: null,
+  flyTo: (item) => set({ flyTarget: item }),
+  clearFlyTarget: () => set({ flyTarget: null }),
 }))
 
 export default useMapStore

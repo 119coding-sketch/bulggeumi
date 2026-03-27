@@ -1,9 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import useMapStore from '../store/useMapStore'
-import fireStations from '../data/fireStations'
-
-const ALL_STATIONS = Object.keys(fireStations)
 
 const STATUS_STYLE = {
   정상:    { bg: 'bg-green-100',  text: 'text-green-700'  },
@@ -22,108 +19,43 @@ function StatusBadge({ status }) {
 
 export default function Sidebar() {
   const {
-    selectedItem, selectItem, clearSelection,
-    isLoading, loadedCount, totalCount, error,
-    filterStation, filterCenter, setFilterStation, setFilterCenter,
-    getFiltered, getCenterList,
+    selectedItem, selectItem, clearSelection, flyTo,
+    isLoading, loadedCount, error,
+    getFiltered,
+    pinnedItems, unpinItem, clearSearch,
   } = useMapStore()
 
-  const [searchQuery, setSearchQuery] = React.useState('')
-
-  const filtered = getFiltered().filter((e) => {
-    if (!searchQuery.trim()) return true
-    const q = searchQuery.trim().toLowerCase()
-    return (
-      String(e.id).toLowerCase().includes(q) ||
-      e.name.toLowerCase().includes(q) ||
-      e.address.toLowerCase().includes(q)
-    )
-  })
-
-  // 실제 로드된 데이터 기반 센터 목록
-  const centerList = getCenterList(filterStation)
+  const filtered = getFiltered()
+  const inSearchMode = pinnedItems.length > 0
 
   return (
-    <aside className="w-72 h-full bg-white shadow-lg flex flex-col overflow-hidden">
+    <aside className="w-72 h-full bg-white shadow-lg flex flex-col overflow-hidden border-l border-gray-100">
 
       {/* 헤더 */}
-      <div className="px-4 py-4 bg-red-600 text-white">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold tracking-tight">🧯 불끄미</h1>
+      <div className="px-4 py-3 border-b flex items-center justify-between">
+        <p className="text-sm font-semibold text-gray-700">
+          {isLoading && loadedCount === 0
+            ? '불러오는 중...'
+            : inSearchMode
+              ? `선택됨 ${pinnedItems.length}개`
+              : `${filtered.length.toLocaleString()}개`}
+        </p>
+        <div className="flex items-center gap-2">
+          {inSearchMode && (
+            <button
+              onClick={() => { clearSearch(); clearSelection() }}
+              className="text-xs text-red-400 hover:text-red-600 border border-red-200 px-2 py-1 rounded transition-colors"
+            >
+              검색 초기화
+            </button>
+          )}
           <Link
             to="/admin/login"
-            className="text-xs text-red-200 hover:text-white border border-red-400 px-2 py-1 rounded transition-colors"
+            className="text-xs text-gray-400 hover:text-red-500 border border-gray-200 px-2 py-1 rounded transition-colors"
           >
             담당자
           </Link>
         </div>
-        <p className="text-xs text-red-200 mt-0.5">보이는소화기 관리 시스템</p>
-      </div>
-
-      {/* 필터 패널 */}
-      <div className="border-b bg-gray-50 px-3 py-3 space-y-2">
-        {/* 소방서 선택 */}
-        <div>
-          <label className="text-xs text-gray-400 font-medium mb-1 block">소방서</label>
-          <select
-            value={filterStation}
-            onChange={(e) => setFilterStation(e.target.value)}
-            className="w-full text-sm border border-gray-200 rounded-lg px-2 py-1.5 bg-white
-              focus:outline-none focus:border-red-400 text-gray-700"
-          >
-            {ALL_STATIONS.map((name) => (
-              <option key={name} value={name}>{name}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* 안전센터 선택 (소방서 선택 시만 표시) */}
-        {filterStation !== '전체' && (
-          <div>
-            <label className="text-xs text-gray-400 font-medium mb-1 block">안전센터</label>
-            <select
-              value={filterCenter}
-              onChange={(e) => setFilterCenter(e.target.value)}
-              className="w-full text-sm border border-gray-200 rounded-lg px-2 py-1.5 bg-white
-                focus:outline-none focus:border-orange-400 text-gray-700"
-            >
-              <option value="전체">전체 센터</option>
-              {centerList.map((name) => (
-                <option key={name} value={name}>{name}</option>
-              ))}
-            </select>
-          </div>
-        )}
-
-        {/* 검색창 */}
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="코드·명칭·주소 검색 (예: 17_1)"
-          className="w-full text-sm border border-gray-200 rounded-lg px-2 py-1.5 bg-white
-            focus:outline-none focus:border-red-400 text-gray-700 placeholder:text-gray-300"
-        />
-
-        {/* 결과 수 / 로딩 진행 */}
-        {isLoading ? (
-          <div className="flex items-center gap-2">
-            <svg className="animate-spin h-3.5 w-3.5 text-red-500 shrink-0" viewBox="0 0 24 24" fill="none">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
-            </svg>
-            <p className="text-xs text-gray-400">
-              소화기 불러오는 중
-              {totalCount > 0 && (
-                <span className="ml-1 font-medium text-gray-500">
-                  {loadedCount.toLocaleString()} / {totalCount.toLocaleString()}
-                </span>
-              )}
-            </p>
-          </div>
-        ) : (
-          <p className="text-xs text-gray-400">{filtered.length.toLocaleString()}개 표시</p>
-        )}
       </div>
 
       {/* 오류 */}
@@ -133,7 +65,7 @@ export default function Sidebar() {
 
       <div className="flex-1 overflow-y-auto relative">
 
-        {/* 전체 로딩 오버레이 (데이터 없을 때만) */}
+        {/* 초기 로딩 오버레이 */}
         {isLoading && loadedCount === 0 && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-white z-10 gap-3">
             <svg className="animate-spin h-8 w-8 text-red-500" viewBox="0 0 24 24" fill="none">
@@ -161,14 +93,16 @@ export default function Sidebar() {
             <table className="text-xs w-full mb-4">
               <tbody>
                 {[
-                  ['코드',  selectedItem.id],
-                  ['종류',  selectedItem.type],
-                  ['용량',  selectedItem.capacity],
+                  ['코드',   selectedItem.id],
+                  ['소방서', selectedItem.station],
+                  ['센터',   selectedItem.center],
+                  ['종류',   selectedItem.type],
+                  ['용량',   selectedItem.capacity],
                   ['설치일', selectedItem.installedAt],
                 ].filter(([, v]) => v).map(([label, value]) => (
                   <tr key={label} className="border-b last:border-0">
                     <td className="py-1.5 pr-2 text-gray-400 w-16">{label}</td>
-                    <td className="py-1.5">{value}</td>
+                    <td className="py-1.5 font-mono text-xs break-all">{value}</td>
                   </tr>
                 ))}
                 <tr>
@@ -196,26 +130,44 @@ export default function Sidebar() {
         ) : (
 
           /* 목록 뷰 */
-          <ul className="divide-y">
-            {filtered.map((item) => (
-              <li
-                key={item.id}
-                className="px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
-                onClick={() => selectItem(item)}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <p className="text-sm font-medium leading-snug">{item.name}</p>
-                  <StatusBadge status={item.status} />
-                </div>
-                <p className="text-xs text-gray-400 mt-0.5 truncate">{item.address}</p>
-              </li>
-            ))}
-            {!isLoading && filtered.length === 0 && (
-              <li className="px-4 py-6 text-sm text-gray-400 text-center">
-                소화기함 데이터가 없습니다.
-              </li>
+          <>
+            {inSearchMode && (
+              <div className="px-4 py-2 bg-red-50 border-b text-xs text-red-500 font-medium">
+                선택된 소화기 — 검색으로 추가, X로 개별 제거
+              </div>
             )}
-          </ul>
+            <ul className="divide-y">
+              {(inSearchMode ? pinnedItems : filtered).map((item) => (
+                <li
+                  key={item.id}
+                  className="px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                  onClick={() => { selectItem(item); flyTo(item) }}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-sm font-medium leading-snug">{item.name}</p>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <StatusBadge status={item.status} />
+                      {inSearchMode && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); unpinItem(item.id) }}
+                          className="text-gray-300 hover:text-red-400 text-base leading-none ml-1"
+                        >
+                          ×
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-0.5 truncate">{item.address}</p>
+                  <p className="text-xs font-mono text-gray-300 mt-0.5">{item.id}</p>
+                </li>
+              ))}
+              {!isLoading && !inSearchMode && filtered.length === 0 && (
+                <li className="px-4 py-6 text-sm text-gray-400 text-center">
+                  소화기함 데이터가 없습니다.
+                </li>
+              )}
+            </ul>
+          </>
         )}
       </div>
     </aside>
