@@ -1,8 +1,58 @@
 import axios from 'axios'
+import fireStations from '../data/fireStations'
 
 // 스마트서울맵 테마 API — 보이는소화기함 (theme_id: 11103379)
 const THEME_KEY = import.meta.env.VITE_THEME_API_KEY
 const THEME_ID = '11103379'
+
+// 구코드 → 소방서명 매핑
+const GU_TO_STATION = {
+  71: '종로소방서', 72: '중부소방서', 73: '광진소방서', 74: '용산소방서',
+  75: '동대문소방서', 76: '영등포소방서', 77: '성북소방서', 78: '은평소방서',
+  79: '강남소방서', 80: '서초소방서', 81: '강서소방서', 82: '강동소방서',
+  83: '마포소방서', 84: '도봉소방서', 85: '구로소방서', 86: '노원소방서',
+  87: '관악소방서', 88: '송파소방서', 89: '양천소방서', 90: '중랑소방서',
+  91: '동작소방서', 92: '서대문소방서', 93: '강북소방서', 94: '성동소방서',
+  95: '금천소방서',
+}
+
+/**
+ * COT_CONTS_ID를 파싱해 소방서/센터명을 반환합니다.
+ * 형식1: "72-253-2021-001234" → 구코드-센터코드-연도-번호
+ * 형식2: "공용용-72" → 공용 소화기 (구코드만)
+ *
+ * 센터코드 규칙:
+ *   base = (구코드 - 71) * 10 + 240
+ *   base+0 = 현장대응단, base+1 = 공용, base+2~= 안전센터 순서
+ */
+function resolveStationCenter(contsId) {
+  if (!contsId) return { station: '', center: '' }
+
+  const parts = String(contsId).split('-')
+
+  // 공용 형식: "공용용-72" 등
+  if (isNaN(parseInt(parts[0], 10))) {
+    const guCode = parseInt(parts[1], 10)
+    const station = GU_TO_STATION[guCode] ?? ''
+    return { station, center: '공용' }
+  }
+
+  const guCode = parseInt(parts[0], 10)
+  const centerCode = parseInt(parts[1], 10)
+  const station = GU_TO_STATION[guCode]
+  if (!station) return { station: '', center: '' }
+
+  const base = (guCode - 71) * 10 + 240
+  const offset = centerCode - base
+
+  if (offset === 1) return { station, center: '공용' }
+
+  // offset 0 → 현장대응단(index 0), offset 2+ → 안전센터(index offset-1)
+  const centerIdx = offset === 0 ? 0 : offset - 1
+  const centers = fireStations[station] ?? []
+  const center = centers[centerIdx] ?? `미확인(${centerCode})`
+  return { station, center }
+}
 
 // 서울 중심 좌표 (서울시청 기준)
 const SEOUL_CENTER_X = 126.978388
@@ -34,6 +84,7 @@ function extractGu(address) {
 
 function mapThemeItem(item) {
   const address = item.COT_ADDR_FULL_NEW || item.COT_ADDR_FULL_OLD || ''
+  const { station, center } = resolveStationCenter(item.COT_CONTS_ID)
   return {
     id: item.COT_CONTS_ID,
     lat: item.COT_COORD_Y,
@@ -41,6 +92,8 @@ function mapThemeItem(item) {
     name: item.COT_CONTS_NAME || '보이는 소화기',
     address,
     gu: extractGu(address),
+    station,
+    center,
     type: '분말 ABC형',
     capacity: '',
     installedAt: item.COT_REG_DATE ? item.COT_REG_DATE.split(' ')[0] : '',
