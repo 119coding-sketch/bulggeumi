@@ -13,12 +13,18 @@ function formatPhone(value) {
   return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`
 }
 
+// 이메일 형식 유효성 검사
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+}
+
 export default function AdminContactsPage() {
   const navigate = useNavigate()
   const { contacts, updateContact } = useContactStore()
 
   const [selectedStation, setSelectedStation] = useState(ALL_STATIONS[0])
-  const [savedCenter, setSavedCenter] = useState(null) // 저장 완료 표시용
+  const [savedCenter, setSavedCenter] = useState(null)   // 저장 완료 표시용
+  const [emailError, setEmailError] = useState(null)     // 이메일 오류 센터명
 
   const centers = fireStations[selectedStation] ?? []
 
@@ -27,6 +33,12 @@ export default function AdminContactsPage() {
   }
 
   function handleSave(center) {
+    const contact = contacts[selectedStation]?.[center] ?? {}
+    if (contact.email && !isValidEmail(contact.email)) {
+      setEmailError(center)
+      return
+    }
+    setEmailError(null)
     setSavedCenter(center)
     setTimeout(() => setSavedCenter(null), 2000)
   }
@@ -127,11 +139,21 @@ export default function AdminContactsPage() {
                     <input
                       type="email"
                       value={contact.email ?? ''}
-                      onChange={(e) => handleChange(center, 'email', e.target.value)}
+                      onChange={(e) => {
+                        handleChange(center, 'email', e.target.value)
+                        if (emailError === center) setEmailError(null)
+                      }}
                       placeholder="center@fire.go.kr"
-                      className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2
-                        focus:outline-none focus:border-red-400 text-gray-700"
+                      className={`w-full text-sm border rounded-lg px-3 py-2
+                        focus:outline-none text-gray-700
+                        ${emailError === center
+                          ? 'border-red-400 focus:border-red-500 bg-red-50'
+                          : 'border-gray-200 focus:border-red-400'
+                        }`}
                     />
+                    {emailError === center && (
+                      <p className="text-xs text-red-500 mt-1">올바른 이메일 형식으로 입력해주세요</p>
+                    )}
                   </div>
                 </div>
 
