@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import useReportStore from '../store/useReportStore'
 import useMapStore from '../store/useMapStore'
+import useContactStore from '../store/useContactStore'
+import { resolveStationCenter } from '../utils/stationUtils'
 
 const REPORT_TYPES = [
   { type: '소화기 없음', icon: '🚫', desc: '소화기가 없거나 수량이 부족합니다' },
@@ -14,18 +16,27 @@ export default function ReportPage() {
   const { id } = useParams()
   const { extinguishers } = useMapStore()
   const { addReport } = useReportStore()
+  const { getContact } = useContactStore()
 
-  // 이미 로드된 데이터에서 소화기 정보 조회
+  // 스토어에 데이터 있으면 사용, 없으면 ID에서 직접 파싱
   const ext = extinguishers.find((e) => String(e.id) === String(id))
+  const { station, center } = ext
+    ? { station: ext.station, center: ext.center }
+    : resolveStationCenter(id)
+
+  // 해당 센터의 알림 이메일 조회
+  const contact = getContact(station, center)
 
   const [selectedType, setSelectedType] = useState(null)
   const [memo, setMemo] = useState('')
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [notifyError, setNotifyError] = useState(null)
 
   async function handleSubmit() {
     if (!selectedType) return
     setSubmitting(true)
+    setNotifyError(null)
 
     const report = {
       id: Date.now(),
@@ -35,11 +46,29 @@ export default function ReportPage() {
       reportedAt: new Date().toISOString(),
       status: '접수',
     }
-
     addReport(report)
 
-    // TODO: 이메일/SMS 발송 API 호출 (Resend + 알리고 연동 후)
-    // await fetch('/api/notify', { method: 'POST', body: JSON.stringify(report) })
+    // 이메일 발송
+    if (contact.email) {
+      try {
+        await fetch('/api/notify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            extinguisherId: id,
+            extName: ext?.name ?? '',
+            extAddress: ext?.address ?? '',
+            station,
+            center,
+            type: selectedType,
+            memo: memo.trim(),
+            email: contact.email,
+          }),
+        })
+      } catch {
+        setNotifyError('알림 발송에 실패했습니다. 신고는 정상 접수되었습니다.')
+      }
+    }
 
     setSubmitting(false)
     setSubmitted(true)
@@ -54,6 +83,9 @@ export default function ReportPage() {
           <h2 className="text-xl font-bold text-gray-800 mb-2">신고가 접수되었습니다</h2>
           <p className="text-sm text-gray-500 mb-1">담당 센터에 알림이 발송되었습니다.</p>
           <p className="text-sm text-gray-500">빠르게 확인 후 조치하겠습니다.</p>
+          {notifyError && (
+            <p className="mt-3 text-xs text-orange-500">{notifyError}</p>
+          )}
           <div className="mt-6 p-3 bg-gray-50 rounded-xl text-xs text-gray-400">
             신고 유형: <span className="font-medium text-gray-600">{selectedType}</span>
           </div>
@@ -79,12 +111,14 @@ export default function ReportPage() {
             <>
               <p className="font-semibold text-sm text-gray-800">{ext.name}</p>
               <p className="text-xs text-gray-400 mt-0.5">{ext.address}</p>
-              <p className="text-xs text-gray-300 mt-1">{ext.station} · {ext.center}</p>
+              <p className="text-xs text-gray-300 mt-1">{station} · {center}</p>
             </>
           ) : (
             <>
-              <p className="text-xs text-gray-400">소화기함 ID</p>
-              <p className="font-mono text-sm text-gray-700 mt-0.5">{id}</p>
+              <p className="text-xs text-gray-400">담당 센터</p>
+              <p className="text-sm text-gray-700 font-medium mt-0.5">
+                {station || '확인 중'} {center ? `· ${center}` : ''}
+              </p>
             </>
           )}
         </div>
@@ -109,9 +143,7 @@ export default function ReportPage() {
                 </p>
                 <p className="text-xs text-gray-400">{desc}</p>
               </div>
-              {selectedType === type && (
-                <span className="ml-auto text-red-500 text-lg">✓</span>
-              )}
+              {selectedType === type && <span className="ml-auto text-red-500 text-lg">✓</span>}
             </button>
           ))}
         </div>
