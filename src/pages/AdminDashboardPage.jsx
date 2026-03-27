@@ -94,6 +94,12 @@ export default function AdminDashboardPage() {
         </div>
         <div className="flex items-center gap-3">
           <button
+            onClick={() => navigate('/admin/contacts')}
+            className="text-sm text-red-200 hover:text-white transition-colors"
+          >
+            연락처 관리
+          </button>
+          <button
             onClick={() => navigate('/')}
             className="text-sm text-red-200 hover:text-white transition-colors"
           >

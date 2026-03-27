@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import MapPage from './pages/MapPage'
 import AdminLoginPage from './pages/AdminLoginPage'
 import AdminDashboardPage from './pages/AdminDashboardPage'
+import AdminContactsPage from './pages/AdminContactsPage'
+import ReportPage from './pages/ReportPage'
 import useAuthStore from './store/useAuthStore'
 
 function RequireAuth({ children }) {
@@ -20,6 +22,15 @@ export default function App() {
           element={
             <RequireAuth>
               <AdminDashboardPage />
+            </RequireAuth>
+          }
+        />
+        <Route path="/report/:id" element={<ReportPage />} />
+        <Route
+          path="/admin/contacts"
+          element={
+            <RequireAuth>
+              <AdminContactsPage />
             </RequireAuth>
           }
         />
