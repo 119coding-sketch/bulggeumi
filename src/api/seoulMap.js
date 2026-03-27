@@ -78,10 +78,21 @@ async function fetchPage(page_no) {
   return data
 }
 
+const CACHE_KEY = 'bulggeumi_extinguishers'
+const CACHE_TTL = 30 * 60 * 1000 // 30분
+
 export async function fetchExtinguishers() {
+  // sessionStorage 캐시 확인 (탭 닫기 전까지 유지, 30분 TTL)
+  try {
+    const cached = sessionStorage.getItem(CACHE_KEY)
+    if (cached) {
+      const { data, ts } = JSON.parse(cached)
+      if (Date.now() - ts < CACHE_TTL) return data
+    }
+  } catch { /* sessionStorage 사용 불가 시 무시 */ }
+
   // 1페이지 먼저 가져오고 헤더에서 총 건수 추출
   const first = await fetchPage(1)
-  console.log('[불끄미] API 헤더:', first.header)
 
   // 헤더 필드명이 API마다 다를 수 있어 여러 후보 탐색
   const headerObj = first.header ?? {}
@@ -119,7 +130,14 @@ export async function fetchExtinguishers() {
     }
   }
 
-  return allItems.map(mapThemeItem)
+  const result = allItems.map(mapThemeItem)
+
+  // sessionStorage에 캐시 저장
+  try {
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data: result, ts: Date.now() }))
+  } catch { /* 저장 실패 시 무시 */ }
+
+  return result
 }
 
 /**
