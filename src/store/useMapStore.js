@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { fetchExtinguishers } from '../api/seoulMap'
+import { fetchExtinguishersByStation } from '../api/seoulMap'
 
 const useMapStore = create((set, get) => ({
   extinguishers: [],
@@ -11,12 +11,12 @@ const useMapStore = create((set, get) => ({
   filterStation: '종로소방서',
   filterCenter: '전체',
 
-  /** API에서 소화기 목록을 불러옵니다. 1페이지 도착 즉시 화면에 반영합니다. */
+  /** 선택된 소방서의 소화기 목록을 불러옵니다. 1페이지 도착 즉시 화면에 반영합니다. */
   fetchExtinguishers: async () => {
-    set({ isLoading: true, error: null })
+    const { filterStation } = get()
+    set({ isLoading: true, error: null, extinguishers: [] })
     try {
-      const data = await fetchExtinguishers((firstPage) => {
-        // 1페이지 도착 즉시 표시 (나머지는 백그라운드 로딩)
+      const data = await fetchExtinguishersByStation(filterStation, (firstPage) => {
         set({ extinguishers: firstPage })
       })
       set({ extinguishers: Array.isArray(data) ? data : [] })
@@ -27,8 +27,20 @@ const useMapStore = create((set, get) => ({
     }
   },
 
-  /** 소방서 필터 변경 (센터는 전체로 초기화) */
-  setFilterStation: (name) => set({ filterStation: name, filterCenter: '전체' }),
+  /** 소방서 필터 변경 (센터는 전체로 초기화하고 해당 소방서 데이터 재요청) */
+  setFilterStation: async (name) => {
+    set({ filterStation: name, filterCenter: '전체', extinguishers: [], isLoading: true, error: null })
+    try {
+      const data = await fetchExtinguishersByStation(name, (firstPage) => {
+        set({ extinguishers: firstPage })
+      })
+      set({ extinguishers: Array.isArray(data) ? data : [] })
+    } catch (err) {
+      set({ error: err.message, extinguishers: [] })
+    } finally {
+      set({ isLoading: false })
+    }
+  },
 
   /** 센터 필터 변경 */
   setFilterCenter: (name) => set({ filterCenter: name }),
