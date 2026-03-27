@@ -1,6 +1,5 @@
 {
   "rewrites": [
-    { "source": "/api/seoul-proxy/(.*)", "destination": "/api/seoul-proxy/$1" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }
