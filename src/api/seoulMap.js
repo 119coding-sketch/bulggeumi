@@ -82,7 +82,12 @@ function extractGu(address) {
   return (candidate.endsWith('구') || candidate.endsWith('군')) ? candidate : ''
 }
 
+let _debugLogged = false
 function mapThemeItem(item) {
+  if (!_debugLogged) {
+    console.log('[불끄미 디버그] 원본 API 항목 샘플:', JSON.stringify(item, null, 2))
+    _debugLogged = true
+  }
   const address = item.COT_ADDR_FULL_NEW || item.COT_ADDR_FULL_OLD || ''
   const { station, center } = resolveStationCenter(item.COT_CONTS_ID)
   return {
