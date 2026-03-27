@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//d/dev/**)",
+      "Bash(npm create:*)",
+      "Bash(npx --yes create-vite@latest . --template react)",
+      "Bash(npm install:*)",
+      "WebFetch(domain:map.seoul.go.kr)",
+      "WebSearch",
+      "WebFetch(domain:data.seoul.go.kr)",
+      "WebFetch(domain:www.data.go.kr)",
+      "WebFetch(domain:github.com)",
+      "Bash(curl -s \"https://map.seoul.go.kr/smgis2/pkg/themeList.do?apikey=KEY318_50b5eb2ed5584d4790db7a2996a57c96&q_page=1&q_size=5\" -H \"Accept: application/json\")",
+      "Bash(curl -s -X POST \"https://map.seoul.go.kr/smgis2/pkg/themeList.do\" -H \"Content-Type: application/x-www-form-urlencoded\" -d \"apikey=KEY318_50b5eb2ed5584d4790db7a2996a57c96&q_page=1&q_size=5\")",
+      "Bash(curl -s \"https://map.seoul.go.kr/smgis2/pkg/themeContents.do?apikey=KEY318_50b5eb2ed5584d4790db7a2996a57c96&q_theme=TH_FEXT&q_page=1&q_size=3\")",
+      "Bash(curl -sv \"https://map.seoul.go.kr/smgis2/pkg/themeList.do?q_apikey=KEY318_50b5eb2ed5584d4790db7a2996a57c96&q_page=1&q_size=3\")",
+      "Bash(curl -sv \"https://map.seoul.go.kr/smgis2/pkg/themeList.do\" -H \"Referer: https://map.seoul.go.kr/smgis2/openApi\" -H \"Accept: application/json, text/plain, */*\" -H \"X-Requested-With: XMLHttpRequest\" --data-urlencode \"apikey=KEY318_50b5eb2ed5584d4790db7a2996a57c96\" --data-urlencode \"q_page=1\" --data-urlencode \"q_size=3\")",
+      "Bash(curl -s \"https://map.seoul.go.kr/smgis2/pkg/themeList.do\" -v)",
+      "Bash(curl -s \"https://map.seoul.go.kr/openapi/pkg/themeList.do?apikey=KEY318_50b5eb2ed5584d4790db7a2996a57c96&q_page=1&q_size=3\")",
+      "Bash(curl -s \"https://map.seoul.go.kr/openapi/v5/KEY318_50b5eb2ed5584d4790db7a2996a57c96/theme/list?q_page=1&q_size=3\")",
+      "Bash(curl -s \"https://map.seoul.go.kr/openapi/v5/KEY318_50b5eb2ed5584d4790db7a2996a57c96/themeList?q_page=1&q_size=3\")",
+      "Bash(curl -s \"https://map.seoul.go.kr/smgis2/pkg/themeList.do?apikey=KEY318_50b5eb2ed5584d4790db7a2996a57c96&q_theme=TH_FEXT&q_output_type=JSON&q_page=1&q_size=5\" -H \"Referer: https://map.seoul.go.kr/smgis2/\" -H \"Accept: application/json\" -b \"MAPSESSIONID=test\")",
+      "Bash(curl -s \"https://map.seoul.go.kr/smgis2/openApi\" -H \"User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36\")",
+      "Bash(curl:*)",
+      "Bash(python -c \":*)",
+      "Bash(npm run:*)"
+    ]
+  }
+}
