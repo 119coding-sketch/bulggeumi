@@ -95,6 +95,8 @@ api/
 - 환경변수 (Vercel + .env):
   - `VITE_THEME_API_KEY`: 스마트서울맵 테마 API 키
   - `VITE_MAP_API_KEY`: 지도 타일 API 키 (현재 CartoDB로 미사용)
+  - `UPSTASH_REDIS_REST_URL`: Upstash Redis URL (Vercel Integration 자동 주입)
+  - `UPSTASH_REDIS_REST_TOKEN`: Upstash Redis 토큰 (Vercel Integration 자동 주입)
 
 **페이지네이션**: 1000개씩, totalCount 헤더 파싱 → 전체 페이지 자동 요청 (10페이지 배치)
 
@@ -123,7 +125,7 @@ api/
 10. ✅ SearchCard — 소방서/센터 필터 + 소화기 검색 + 핀(pin) 기능
 11. ⬜ 이메일 알림 (Resend 연동)
 12. ⬜ SMS 알림 (알리고 연동)
-13. ⬜ 연락처 클라우드 저장 (Vercel KV)
+13. ✅ 연락처 서버 저장 (Upstash Redis via Vercel Integration)
 
 ## 코딩 규칙
 - 컴포넌트는 함수형으로 작성
@@ -157,3 +159,6 @@ api/
 - [2026-03-28] 로딩 진행률 표시 — loadedCount/totalCount 실시간 업데이트 (SearchCard 하단 + Sidebar 스피너)
 - [2026-03-28] Sidebar에서 소방서/센터 필터 UI 제거 → SearchCard로 이전, Sidebar는 목록/상세 전용으로 단순화
 - [2026-03-28] 사이드바 목록에 소화기 코드(id) 폰트모노 표시 추가
+- [2026-03-28] 연락처 저장소를 localStorage → Upstash Redis로 교체 (api/contacts.js GET/POST, @upstash/redis)
+- [2026-03-28] AdminContactsPage: fetchContacts(mount 시 서버 조회) + saveContact(저장 버튼 클릭 시 서버 저장) 연결
+- [2026-03-28] 환경변수 필요: UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN (Vercel Integration에서 자동 주입)

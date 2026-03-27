@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import useContactStore from '../store/useContactStore'
 import fireStations from '../data/fireStations'
@@ -11,23 +11,39 @@ function isValidEmail(email) {
 
 export default function AdminContactsPage() {
   const navigate = useNavigate()
-  const { contacts, updateContact } = useContactStore()
+  const { contacts, isLoaded, fetchContacts, updateContact, saveContact } = useContactStore()
 
   const [selectedStation, setSelectedStation] = useState(ALL_STATIONS[0])
   const [savedCenter, setSavedCenter] = useState(null)
+  const [savingCenter, setSavingCenter] = useState(null)
   const [emailError, setEmailError] = useState(null)
+  const [saveError, setSaveError] = useState(null)
+
+  // 페이지 진입 시 서버에서 연락처 불러오기
+  useEffect(() => {
+    fetchContacts()
+  }, [fetchContacts])
 
   const centers = fireStations[selectedStation] ?? []
 
-  function handleSave(center) {
+  async function handleSave(center) {
     const contact = contacts[selectedStation]?.[center] ?? {}
     if (contact.email && !isValidEmail(contact.email)) {
       setEmailError(center)
       return
     }
     setEmailError(null)
-    setSavedCenter(center)
-    setTimeout(() => setSavedCenter(null), 2000)
+    setSaveError(null)
+    setSavingCenter(center)
+    try {
+      await saveContact(selectedStation, center)
+      setSavedCenter(center)
+      setTimeout(() => setSavedCenter(null), 2000)
+    } catch {
+      setSaveError(center)
+    } finally {
+      setSavingCenter(null)
+    }
   }
 
   return (
@@ -60,7 +76,7 @@ export default function AdminContactsPage() {
             {ALL_STATIONS.map((name) => (
               <button
                 key={name}
-                onClick={() => { setSelectedStation(name); setEmailError(null) }}
+                onClick={() => { setSelectedStation(name); setEmailError(null); setSaveError(null) }}
                 className={`px-3 py-1.5 rounded-lg text-sm border transition-colors
                   ${selectedStation === name
                     ? 'bg-red-600 text-white border-red-600 font-medium'
@@ -73,71 +89,84 @@ export default function AdminContactsPage() {
           </div>
         </div>
 
+        {/* 로딩 중 */}
+        {!isLoaded && (
+          <div className="text-center py-10 text-sm text-gray-400">연락처 불러오는 중...</div>
+        )}
+
         {/* 센터별 이메일 입력 */}
-        <div className="space-y-3">
-          {centers.map((center) => {
-            const contact = contacts[selectedStation]?.[center] ?? {}
-            const isSaved = savedCenter === center
-            const hasError = emailError === center
+        {isLoaded && (
+          <div className="space-y-3">
+            {centers.map((center) => {
+              const contact = contacts[selectedStation]?.[center] ?? {}
+              const isSaved = savedCenter === center
+              const isSaving = savingCenter === center
+              const hasError = emailError === center
+              const hasNetworkError = saveError === center
 
-            return (
-              <div key={center} className="bg-white rounded-xl border border-gray-100 shadow-sm px-5 py-4">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="font-semibold text-sm text-gray-800">{center}</p>
-                  {isSaved && <span className="text-xs text-green-600 font-medium">✓ 저장됨</span>}
+              return (
+                <div key={center} className="bg-white rounded-xl border border-gray-100 shadow-sm px-5 py-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="font-semibold text-sm text-gray-800">{center}</p>
+                    {isSaved && <span className="text-xs text-green-600 font-medium">✓ 저장됨</span>}
+                    {hasNetworkError && <span className="text-xs text-red-500">저장 실패 — 다시 시도해주세요</span>}
+                  </div>
+
+                  <div className="flex gap-3 items-start">
+                    {/* 이메일 */}
+                    <div className="flex-1">
+                      <label className="text-xs text-gray-400 mb-1 block">
+                        이메일 <span className="text-gray-300">(신고 알림 수신)</span>
+                      </label>
+                      <input
+                        type="email"
+                        value={contact.email ?? ''}
+                        onChange={(e) => {
+                          updateContact(selectedStation, center, 'email', e.target.value)
+                          if (hasError) setEmailError(null)
+                          if (hasNetworkError) setSaveError(null)
+                        }}
+                        placeholder="center@fire.go.kr"
+                        className={`w-full text-sm border rounded-lg px-3 py-2 focus:outline-none text-gray-700
+                          ${hasError ? 'border-red-400 bg-red-50' : 'border-gray-200 focus:border-red-400'}`}
+                      />
+                      {hasError && (
+                        <p className="text-xs text-red-500 mt-1">올바른 이메일 형식으로 입력해주세요</p>
+                      )}
+                    </div>
+
+                    {/* 네이버웍스 (추후) */}
+                    <div className="flex-1">
+                      <label className="text-xs text-gray-400 mb-1 block">
+                        네이버웍스 채널 ID <span className="text-gray-300">(추후 연동)</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={contact.worksChannelId ?? ''}
+                        onChange={(e) => updateContact(selectedStation, center, 'worksChannelId', e.target.value)}
+                        placeholder="추후 지원 예정"
+                        disabled
+                        className="w-full text-sm border border-gray-100 rounded-lg px-3 py-2
+                          text-gray-300 bg-gray-50 cursor-not-allowed"
+                      />
+                    </div>
+
+                    <div className="pt-5">
+                      <button
+                        onClick={() => handleSave(center)}
+                        disabled={isSaving}
+                        className="text-sm px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700
+                          transition-colors whitespace-nowrap disabled:opacity-50"
+                      >
+                        {isSaving ? '저장 중...' : '저장'}
+                      </button>
+                    </div>
+                  </div>
                 </div>
-
-                <div className="flex gap-3 items-start">
-                  {/* 이메일 */}
-                  <div className="flex-1">
-                    <label className="text-xs text-gray-400 mb-1 block">
-                      이메일 <span className="text-gray-300">(신고 알림 수신)</span>
-                    </label>
-                    <input
-                      type="email"
-                      value={contact.email ?? ''}
-                      onChange={(e) => {
-                        updateContact(selectedStation, center, 'email', e.target.value)
-                        if (hasError) setEmailError(null)
-                      }}
-                      placeholder="center@fire.go.kr"
-                      className={`w-full text-sm border rounded-lg px-3 py-2 focus:outline-none text-gray-700
-                        ${hasError ? 'border-red-400 bg-red-50' : 'border-gray-200 focus:border-red-400'}`}
-                    />
-                    {hasError && (
-                      <p className="text-xs text-red-500 mt-1">올바른 이메일 형식으로 입력해주세요</p>
-                    )}
-                  </div>
-
-                  {/* 네이버웍스 (추후) */}
-                  <div className="flex-1">
-                    <label className="text-xs text-gray-400 mb-1 block">
-                      네이버웍스 채널 ID <span className="text-gray-300">(추후 연동)</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={contact.worksChannelId ?? ''}
-                      onChange={(e) => updateContact(selectedStation, center, 'worksChannelId', e.target.value)}
-                      placeholder="추후 지원 예정"
-                      disabled
-                      className="w-full text-sm border border-gray-100 rounded-lg px-3 py-2
-                        text-gray-300 bg-gray-50 cursor-not-allowed"
-                    />
-                  </div>
-
-                  <div className="pt-5">
-                    <button
-                      onClick={() => handleSave(center)}
-                      className="text-sm px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors whitespace-nowrap"
-                    >
-                      저장
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )
-          })}
-        </div>
+              )
+            })}
+          </div>
+        )}
 
       </main>
     </div>
