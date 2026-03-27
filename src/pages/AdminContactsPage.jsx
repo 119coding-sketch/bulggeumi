@@ -5,6 +5,14 @@ import fireStations from '../data/fireStations'
 
 const ALL_STATIONS = Object.keys(fireStations)
 
+// 숫자만 입력받아 010-1234-5678 형식으로 변환
+function formatPhone(value) {
+  const digits = value.replace(/\D/g, '').slice(0, 11)
+  if (digits.length < 4) return digits
+  if (digits.length < 8) return `${digits.slice(0, 3)}-${digits.slice(3)}`
+  return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`
+}
+
 export default function AdminContactsPage() {
   const navigate = useNavigate()
   const { contacts, updateContact } = useContactStore()
@@ -93,8 +101,8 @@ export default function AdminContactsPage() {
                     <input
                       type="tel"
                       value={contact.truckPhone ?? ''}
-                      onChange={(e) => handleChange(center, 'truckPhone', e.target.value)}
-                      placeholder="010-0000-0000"
+                      onChange={(e) => handleChange(center, 'truckPhone', formatPhone(e.target.value))}
+                      placeholder="숫자만 입력 (01012345678)"
                       className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2
                         focus:outline-none focus:border-red-400 text-gray-700"
                     />
@@ -106,8 +114,8 @@ export default function AdminContactsPage() {
                     <input
                       type="tel"
                       value={contact.managerPhone ?? ''}
-                      onChange={(e) => handleChange(center, 'managerPhone', e.target.value)}
-                      placeholder="010-0000-0000"
+                      onChange={(e) => handleChange(center, 'managerPhone', formatPhone(e.target.value))}
+                      placeholder="숫자만 입력 (01012345678)"
                       className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2
                         focus:outline-none focus:border-red-400 text-gray-700"
                     />
