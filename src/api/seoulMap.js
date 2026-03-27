@@ -161,27 +161,6 @@ export async function fetchExtinguishers() {
     }
   }
 
-  // TODO: 필드 확인 후 제거
-  if (allItems.length > 0) {
-    const headers = Object.keys(allItems[0])
-    const csv = [
-      headers.join(','),
-      ...allItems.map((row) =>
-        headers.map((h) => {
-          const v = row[h] ?? ''
-          return `"${String(v).replace(/"/g, '""')}"`
-        }).join(',')
-      ),
-    ].join('\n')
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'extinguishers_raw.csv'
-    a.click()
-    URL.revokeObjectURL(url)
-  }
-
   return allItems.map(mapThemeItem)
 }
 
