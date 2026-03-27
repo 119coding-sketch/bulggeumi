@@ -93,6 +93,7 @@ export async function fetchExtinguishers() {
 
   // 1페이지 먼저 가져오고 헤더에서 총 건수 추출
   const first = await fetchPage(1)
+  console.log('[불끄미] 헤더 전체:', JSON.stringify(first.header))
 
   // 헤더 필드명이 API마다 다를 수 있어 여러 후보 탐색
   const headerObj = first.header ?? {}
