@@ -2,16 +2,23 @@ import { Marker as LeafletMarker, Popup } from 'react-leaflet'
 import L from 'leaflet'
 import useMapStore from '../store/useMapStore'
 
-// 상태별 마커 아이콘 생성
+// 상태별 핀 모양 마커 아이콘 생성 (Leaflet 기본 핀과 동일한 형태)
 function createIcon(status) {
-  const color = status === '이상' ? '#dc2626' : '#2563eb'  // 빨강 or 파랑
-  const border = status === '이상' ? '#991b1b' : '#1d4ed8'
+  const color = status === '이상' ? '#dc2626' : '#2563eb'
+  const shadow = status === '이상' ? '#991b1b' : '#1e40af'
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="41" viewBox="0 0 25 41">
+      <path fill="${color}" stroke="${shadow}" stroke-width="1"
+        d="M12.5 0C5.596 0 0 5.596 0 12.5c0 8.125 12.5 28.5 12.5 28.5S25 20.625 25 12.5C25 5.596 19.404 0 12.5 0z"/>
+      <circle fill="white" cx="12.5" cy="12.5" r="5"/>
+    </svg>
+  `
   return L.divIcon({
     className: '',
-    html: `<div style="width:14px;height:14px;background:${color};border:2.5px solid ${border};border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.35)"></div>`,
-    iconSize: [14, 14],
-    iconAnchor: [7, 7],
-    popupAnchor: [0, -10],
+    html: svg,
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
   })
 }
 
