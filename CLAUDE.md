@@ -136,6 +136,9 @@ api/
 14. ✅ 연락처 삭제 기능
 15. ✅ 지도 하단 신고하기 플로팅 버튼
 16. ✅ 신고 시 마커 빨강, 조치완료 시 파랑 상태 시각화
+17. ✅ 신고 데이터 Redis 저장 (다기기 공유)
+18. ✅ 반응형 디자인 (모바일 최적화)
+19. ✅ 담당자 로그인 제거 → 접수민원 버튼으로 대시보드 직접 접근
 
 ## 코딩 규칙
 - 컴포넌트는 함수형으로 작성
@@ -180,3 +183,8 @@ api/
 - [2026-03-28] Vercel 배포 URL 확정: https://bulggeumi-pn1z.vercel.app
 - [2026-03-28] 마커 색상: 정상=파랑, 이상=빨강 (divIcon), 신고 시 자동 빨강, 조치완료 버튼으로 파랑 복원
 - [2026-03-28] Sidebar 상세 뷰: 이상 상태 시 조치완료 버튼 표시, 정상 시 이상 신고하기 버튼 표시
+- [2026-03-28] 신고 데이터 Upstash Redis 저장 (api/reports.js) — 다기기 공유, 새로고침 후에도 유지
+- [2026-03-28] useReportStore 전면 재작성: 더미 데이터 제거, Redis 기반 fetchReports/addReport/updateStatus
+- [2026-03-28] Map.jsx: fetchExtinguishers 완료 후 fetchReports 순차 실행 (마커 색상 올바르게 반영)
+- [2026-03-28] 반응형 디자인 적용 — SearchCard 모바일 접기/펼치기·목록 버튼, Sidebar 모바일 오버레이, AdminDashboardPage 카드뷰, AdminContactsPage 세로 배치
+- [2026-03-28] 담당자 로그인 제거 — '접수민원' 버튼 클릭 시 대시보드 직접 접근, RequireAuth 가드 삭제
