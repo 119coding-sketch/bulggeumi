@@ -1,15 +1,33 @@
 import { create } from 'zustand'
 import { fetchExtinguishers } from '../api/seoulMap'
 
+const LS_KEY = 'bulggeumi-status-overrides'
+
+// localStorage에서 이상 상태 오버라이드 로드
+function loadOverrides() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY) ?? '{}') } catch { return {} }
+}
+
+// localStorage에 이상 상태 오버라이드 저장
+function saveOverrides(overrides) {
+  localStorage.setItem(LS_KEY, JSON.stringify(overrides))
+}
+
+// API 데이터에 오버라이드 적용
+function applyOverrides(items) {
+  const overrides = loadOverrides()
+  if (Object.keys(overrides).length === 0) return items
+  return items.map((e) => overrides[String(e.id)] ? { ...e, status: overrides[String(e.id)] } : e)
+}
+
 const useMapStore = create((set, get) => ({
   extinguishers: [],
   selectedItem: null,
   isLoading: false,
-  loadedCount: 0,   // 현재까지 불러온 개수
-  totalCount: 0,    // 전체 개수
+  loadedCount: 0,
+  totalCount: 0,
   error: null,
 
-  // 지도 필터 상태 (소방서는 첫 번째로 기본 선택)
   filterStation: '종로소방서',
   filterCenter: '전체',
 
@@ -19,9 +37,10 @@ const useMapStore = create((set, get) => ({
     set({ isLoading: true, error: null, loadedCount: 0, totalCount: 0 })
     try {
       const data = await fetchExtinguishers((items, total) => {
-        set({ extinguishers: items, loadedCount: items.length, totalCount: total })
+        set({ extinguishers: applyOverrides(items), loadedCount: items.length, totalCount: total })
       })
-      set({ extinguishers: Array.isArray(data) ? data : [], loadedCount: data.length })
+      const applied = applyOverrides(Array.isArray(data) ? data : [])
+      set({ extinguishers: applied, loadedCount: applied.length })
     } catch (err) {
       set({ error: err.message, extinguishers: [] })
     } finally {
@@ -29,13 +48,9 @@ const useMapStore = create((set, get) => ({
     }
   },
 
-  /** 소방서 필터 변경 (센터는 전체로 초기화) */
   setFilterStation: (name) => set({ filterStation: name, filterCenter: '전체' }),
-
-  /** 센터 필터 변경 */
   setFilterCenter: (name) => set({ filterCenter: name }),
 
-  /** 선택된 소방서의 실제 데이터 기반 센터 목록 */
   getCenterList: (station) => {
     const { extinguishers } = get()
     const set_ = new Set(
@@ -47,7 +62,6 @@ const useMapStore = create((set, get) => ({
     return Array.from(set_)
   },
 
-  /** 현재 필터가 적용된 소화기 목록 */
   getFiltered: () => {
     const { extinguishers, filterStation, filterCenter } = get()
     return extinguishers.filter((e) =>
@@ -59,22 +73,32 @@ const useMapStore = create((set, get) => ({
   selectItem: (item) => set({ selectedItem: item }),
   clearSelection: () => set({ selectedItem: null }),
 
-  /** 특정 소화기 상태 변경 (이상 신고 / 조치완료) */
-  updateExtinguisherStatus: (id, status) => set((state) => ({
-    extinguishers: state.extinguishers.map((e) =>
-      String(e.id) === String(id) ? { ...e, status } : e
-    ),
-    selectedItem: state.selectedItem && String(state.selectedItem.id) === String(id)
-      ? { ...state.selectedItem, status }
-      : state.selectedItem,
-    pinnedItems: state.pinnedItems.map((e) =>
-      String(e.id) === String(id) ? { ...e, status } : e
-    ),
-  })),
+  /** 특정 소화기 상태 변경 + localStorage에 오버라이드 저장 */
+  updateExtinguisherStatus: (id, status) => {
+    // localStorage 오버라이드 업데이트
+    const overrides = loadOverrides()
+    if (status === '정상') {
+      delete overrides[String(id)]
+    } else {
+      overrides[String(id)] = status
+    }
+    saveOverrides(overrides)
 
-  // 검색 결과 저장 및 핀 목록
-  searchResults: [],   // 마지막 검색 결과 목록
-  pinnedItems: [],     // 누적 선택된 항목들 (지도에 표시)
+    set((state) => ({
+      extinguishers: state.extinguishers.map((e) =>
+        String(e.id) === String(id) ? { ...e, status } : e
+      ),
+      selectedItem: state.selectedItem && String(state.selectedItem.id) === String(id)
+        ? { ...state.selectedItem, status }
+        : state.selectedItem,
+      pinnedItems: state.pinnedItems.map((e) =>
+        String(e.id) === String(id) ? { ...e, status } : e
+      ),
+    }))
+  },
+
+  searchResults: [],
+  pinnedItems: [],
   setSearchResults: (items) => set({ searchResults: items }),
   pinItem: (item) => set((state) => {
     const already = state.pinnedItems.some((p) => p.id === item.id)
@@ -85,7 +109,6 @@ const useMapStore = create((set, get) => ({
   })),
   clearSearch: () => set({ searchResults: [], pinnedItems: [] }),
 
-  // 지도 flyTo 요청 (Map 컴포넌트가 감지 후 초기화)
   flyTarget: null,
   flyTo: (item) => set({ flyTarget: item }),
   clearFlyTarget: () => set({ flyTarget: null }),
