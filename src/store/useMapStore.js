@@ -15,6 +15,7 @@ const useMapStore = create((set, get) => ({
 
   /** API에서 소화기 전체 목록을 불러옵니다. 페이지마다 화면에 반영합니다. */
   fetchExtinguishers: async () => {
+    if (get().extinguishers.length > 0) return  // 이미 로드된 경우 재호출 안 함
     set({ isLoading: true, error: null, loadedCount: 0, totalCount: 0 })
     try {
       const data = await fetchExtinguishers((items, total) => {

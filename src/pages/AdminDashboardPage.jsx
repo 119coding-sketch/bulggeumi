@@ -5,11 +5,10 @@ import useMapStore from '../store/useMapStore'
 import useReportStore from '../store/useReportStore'
 import fireStations from '../data/fireStations'
 
-const STATUS_ORDER = ['접수', '출동중', '완료']
+const STATUS_ORDER = ['접수', '완료']
 const STATUS_STYLE = {
-  접수:   { bg: 'bg-blue-100',   text: 'text-blue-700'   },
-  출동중: { bg: 'bg-yellow-100', text: 'text-yellow-700' },
-  완료:   { bg: 'bg-green-100',  text: 'text-green-700'  },
+  접수:   { bg: 'bg-blue-100',  text: 'text-blue-700'  },
+  완료:   { bg: 'bg-green-100', text: 'text-green-700' },
 }
 const REPORT_TYPE_ICON = {
   '소화기 없음': '🚫',
@@ -32,7 +31,7 @@ function StatusBadge({ status }) {
 export default function AdminDashboardPage() {
   const navigate  = useNavigate()
   const { station: myStation, center: myCenter, logout } = useAuthStore()
-  const { extinguishers, getCenterList } = useMapStore()
+  const { extinguishers, getCenterList, updateExtinguisherStatus } = useMapStore()
   const { reports, updateStatus } = useReportStore()
 
   // 소방서 필터 — 기본값: 로그인한 소방서
@@ -67,15 +66,15 @@ export default function AdminDashboardPage() {
 
   // 통계
   const stats = {
-    total:  filteredReports.length,
-    접수:   filteredReports.filter((r) => r.status === '접수').length,
-    출동중: filteredReports.filter((r) => r.status === '출동중').length,
-    완료:   filteredReports.filter((r) => r.status === '완료').length,
+    total: filteredReports.length,
+    접수:  filteredReports.filter((r) => r.status === '접수').length,
+    완료:  filteredReports.filter((r) => r.status === '완료').length,
   }
 
-  function handleNextStatus(report) {
-    const idx = STATUS_ORDER.indexOf(report.status)
-    if (idx < STATUS_ORDER.length - 1) updateStatus(report.id, STATUS_ORDER[idx + 1])
+  function handleComplete(report) {
+    updateStatus(report.id, '완료')
+    // 소화기 마커도 정상(파랑)으로 복원
+    updateExtinguisherStatus(report.extinguisherId, '정상')
   }
 
   function handleLogout() {
@@ -186,12 +185,11 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* ── 통계 카드 ── */}
-        <div className="grid grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-3 gap-4 mb-6">
           {[
-            { label: '전체 신고', value: stats.total,  color: 'text-gray-800' },
-            { label: '접수',     value: stats.접수,    color: 'text-blue-600' },
-            { label: '출동중',   value: stats.출동중,  color: 'text-yellow-600' },
-            { label: '완료',     value: stats.완료,    color: 'text-green-600' },
+            { label: '전체 신고', value: stats.total, color: 'text-gray-800' },
+            { label: '접수',     value: stats.접수,   color: 'text-blue-600' },
+            { label: '완료',     value: stats.완료,   color: 'text-green-600' },
           ].map(({ label, value, color }) => (
             <div key={label} className="bg-white rounded-xl shadow-sm border border-gray-100 px-5 py-4">
               <p className="text-xs text-gray-400">{label}</p>
@@ -245,11 +243,11 @@ export default function AdminDashboardPage() {
                       <td className="px-4 py-3">
                         {report.status !== '완료' ? (
                           <button
-                            onClick={() => handleNextStatus(report)}
-                            className="text-xs px-3 py-1.5 rounded-lg bg-red-50 text-red-600
-                              hover:bg-red-100 border border-red-200 transition-colors whitespace-nowrap"
+                            onClick={() => handleComplete(report)}
+                            className="text-xs px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600
+                              hover:bg-blue-100 border border-blue-200 transition-colors whitespace-nowrap"
                           >
-                            {report.status === '접수' ? '출동 처리' : '완료 처리'}
+                            조치완료
                           </button>
                         ) : (
                           <span className="text-xs text-gray-300">처리 완료</span>
