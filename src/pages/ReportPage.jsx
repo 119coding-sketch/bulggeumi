@@ -17,7 +17,7 @@ export default function ReportPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { extinguishers, updateExtinguisherStatus } = useMapStore()
-  const { addReport } = useReportStore()
+  const { reports, addReport } = useReportStore()
   const { getContact } = useContactStore()
 
   // 스토어에 데이터 있으면 사용, 없으면 ID에서 직접 파싱
@@ -28,6 +28,11 @@ export default function ReportPage() {
 
   // 해당 센터의 알림 이메일 조회
   const contact = getContact(station, center)
+
+  // 미완료 신고 이력 확인
+  const activeReport = reports.find(
+    (r) => String(r.extinguisherId) === String(id) && r.status !== '완료'
+  )
 
   const [selectedType, setSelectedType] = useState(null)
   const [memo, setMemo] = useState('')
@@ -97,6 +102,33 @@ export default function ReportPage() {
           <button
             onClick={() => navigate('/')}
             className="mt-4 w-full py-2.5 rounded-xl text-sm font-semibold border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors"
+          >
+            지도로 돌아가기
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // 이미 신고된 소화기 안내 화면
+  if (activeReport) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 max-w-sm w-full text-center">
+          <div className="text-5xl mb-4">🔧</div>
+          <h2 className="text-xl font-bold text-gray-800 mb-2">이미 신고된 소화기함입니다</h2>
+          <p className="text-sm text-gray-500 mb-1">담당 센터에서 현재 처리 중입니다.</p>
+          <p className="text-sm text-gray-500">조치가 완료되면 정상 상태로 변경됩니다.</p>
+          <div className="mt-5 p-3 bg-orange-50 rounded-xl text-xs text-orange-600 border border-orange-100">
+            신고 유형: <span className="font-semibold">{activeReport.type}</span>
+            <span className="mx-2 text-orange-300">·</span>
+            신고 시각: <span className="font-semibold">
+              {activeReport.reportedAt.slice(0, 16).replace('T', ' ')}
+            </span>
+          </div>
+          <button
+            onClick={() => navigate('/')}
+            className="mt-5 w-full py-2.5 rounded-xl text-sm font-semibold border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors"
           >
             지도로 돌아가기
           </button>
