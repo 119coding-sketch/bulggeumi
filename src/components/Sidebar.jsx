@@ -24,7 +24,6 @@ export default function Sidebar() {
     isLoading, loadedCount, error,
     getFiltered,
     pinnedItems, unpinItem, clearSearch,
-    updateExtinguisherStatus,
   } = useMapStore()
   const { reports, updateStatus } = useReportStore()
 
@@ -124,12 +123,11 @@ export default function Sidebar() {
             {selectedItem.status === '이상' ? (
               <button
                 onClick={() => {
-                  updateExtinguisherStatus(selectedItem.id, '정상')
-                  // 해당 소화기의 미완료 신고도 완료 처리
                   const active = reports.find(
                     (r) => String(r.extinguisherId) === String(selectedItem.id) && r.status !== '완료'
                   )
                   if (active) updateStatus(active.id, '완료')
+                  clearSelection()
                 }}
                 className="block w-full text-center text-sm font-semibold py-2.5 rounded-xl
                   bg-blue-600 text-white hover:bg-blue-700 transition-colors"

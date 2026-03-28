@@ -23,7 +23,7 @@ const REPORT_TYPES = [
 export default function ReportPage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { extinguishers, updateExtinguisherStatus } = useMapStore()
+  const { extinguishers } = useMapStore()
   const { reports, addReport } = useReportStore()
   const { getContact, fetchContacts, isLoaded } = useContactStore()
 
@@ -65,10 +65,7 @@ export default function ReportPage() {
       reportedAt: new Date().toISOString(),
       status: '접수',
     }
-    addReport(report)
-
-    // 지도 마커를 이상(빨강)으로 변경
-    updateExtinguisherStatus(id, '이상')
+    await addReport(report)  // 마커 색상 변경 + Redis 저장
 
     // 이메일 발송
     if (contact.email) {

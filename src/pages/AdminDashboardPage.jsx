@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import useAuthStore from '../store/useAuthStore'
 import useMapStore from '../store/useMapStore'
@@ -39,8 +39,10 @@ function StatusBadge({ status }) {
 export default function AdminDashboardPage() {
   const navigate  = useNavigate()
   const { station: myStation, center: myCenter, logout } = useAuthStore()
-  const { extinguishers, getCenterList, updateExtinguisherStatus } = useMapStore()
-  const { reports, updateStatus } = useReportStore()
+  const { extinguishers, getCenterList } = useMapStore()
+  const { reports, fetchReports, updateStatus } = useReportStore()
+
+  useEffect(() => { fetchReports() }, [fetchReports])
 
   // 소방서 필터 — 기본값: 로그인한 소방서
   const [filterStation, setFilterStation] = useState(myStation ?? ALL_STATIONS[0])
@@ -81,8 +83,6 @@ export default function AdminDashboardPage() {
 
   function handleComplete(report) {
     updateStatus(report.id, '완료')
-    // 소화기 마커도 정상(파랑)으로 복원
-    updateExtinguisherStatus(report.extinguisherId, '정상')
   }
 
   function handleLogout() {

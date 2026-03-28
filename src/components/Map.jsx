@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import Marker from './Marker'
 import useMapStore from '../store/useMapStore'
+import useReportStore from '../store/useReportStore'
 
 const SEOUL_CENTER = [37.5666, 126.9784]
 const DEFAULT_ZOOM = 13
@@ -24,14 +25,18 @@ function FlyToController() {
 
 export default function Map() {
   const { fetchExtinguishers, getFiltered, pinnedItems, extinguishers } = useMapStore()
+  const { fetchReports } = useReportStore()
 
-  // extinguishers를 구독해서 상태 변경 시 마커가 즉시 업데이트되도록 함
-  // 핀된 항목이 있으면 그것들만, 없으면 필터 전체
   const filtered = pinnedItems.length > 0 ? pinnedItems : getFiltered()
 
   useEffect(() => {
-    fetchExtinguishers()
-  }, [fetchExtinguishers])
+    // 소화기 로드 완료 후 신고 내역을 불러와 마커 색상에 반영
+    async function init() {
+      await fetchExtinguishers()
+      fetchReports()
+    }
+    init()
+  }, [fetchExtinguishers, fetchReports])
 
   return (
     <MapContainer
