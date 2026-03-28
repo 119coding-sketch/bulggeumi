@@ -23,8 +23,9 @@ function FlyToController() {
 }
 
 export default function Map() {
-  const { fetchExtinguishers, getFiltered, pinnedItems } = useMapStore()
+  const { fetchExtinguishers, getFiltered, pinnedItems, extinguishers } = useMapStore()
 
+  // extinguishers를 구독해서 상태 변경 시 마커가 즉시 업데이트되도록 함
   // 핀된 항목이 있으면 그것들만, 없으면 필터 전체
   const filtered = pinnedItems.length > 0 ? pinnedItems : getFiltered()
 

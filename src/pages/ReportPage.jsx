@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import useReportStore from '../store/useReportStore'
 import useMapStore from '../store/useMapStore'
 import useContactStore from '../store/useContactStore'
@@ -15,6 +15,7 @@ const REPORT_TYPES = [
 
 export default function ReportPage() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const { extinguishers, updateExtinguisherStatus } = useMapStore()
   const { addReport } = useReportStore()
   const { getContact } = useContactStore()
@@ -93,6 +94,12 @@ export default function ReportPage() {
           <div className="mt-6 p-3 bg-gray-50 rounded-xl text-xs text-gray-400">
             신고 유형: <span className="font-medium text-gray-600">{selectedType}</span>
           </div>
+          <button
+            onClick={() => navigate('/')}
+            className="mt-4 w-full py-2.5 rounded-xl text-sm font-semibold border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors"
+          >
+            지도로 돌아가기
+          </button>
         </div>
       </div>
     )
