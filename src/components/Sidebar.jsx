@@ -23,6 +23,7 @@ export default function Sidebar() {
     isLoading, loadedCount, error,
     getFiltered,
     pinnedItems, unpinItem, clearSearch,
+    updateExtinguisherStatus,
   } = useMapStore()
 
   const filtered = getFiltered()
@@ -118,13 +119,23 @@ export default function Sidebar() {
               </tbody>
             </table>
 
-            <Link
-              to={`/report/${selectedItem.id}`}
-              className="block w-full text-center text-sm font-semibold py-2.5 rounded-xl
-                bg-red-600 text-white hover:bg-red-700 transition-colors"
-            >
-              이상 신고하기
-            </Link>
+            {selectedItem.status === '이상' ? (
+              <button
+                onClick={() => updateExtinguisherStatus(selectedItem.id, '정상')}
+                className="block w-full text-center text-sm font-semibold py-2.5 rounded-xl
+                  bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+              >
+                ✓ 조치완료 — 정상으로 변경
+              </button>
+            ) : (
+              <Link
+                to={`/report/${selectedItem.id}`}
+                className="block w-full text-center text-sm font-semibold py-2.5 rounded-xl
+                  bg-red-600 text-white hover:bg-red-700 transition-colors"
+              >
+                이상 신고하기
+              </Link>
+            )}
           </div>
 
         ) : (

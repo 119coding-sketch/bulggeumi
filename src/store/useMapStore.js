@@ -58,6 +58,19 @@ const useMapStore = create((set, get) => ({
   selectItem: (item) => set({ selectedItem: item }),
   clearSelection: () => set({ selectedItem: null }),
 
+  /** 특정 소화기 상태 변경 (이상 신고 / 조치완료) */
+  updateExtinguisherStatus: (id, status) => set((state) => ({
+    extinguishers: state.extinguishers.map((e) =>
+      String(e.id) === String(id) ? { ...e, status } : e
+    ),
+    selectedItem: state.selectedItem && String(state.selectedItem.id) === String(id)
+      ? { ...state.selectedItem, status }
+      : state.selectedItem,
+    pinnedItems: state.pinnedItems.map((e) =>
+      String(e.id) === String(id) ? { ...e, status } : e
+    ),
+  })),
+
   // 검색 결과 저장 및 핀 목록
   searchResults: [],   // 마지막 검색 결과 목록
   pinnedItems: [],     // 누적 선택된 항목들 (지도에 표시)

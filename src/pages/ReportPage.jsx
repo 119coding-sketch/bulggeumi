@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import useReportStore from '../store/useReportStore'
 import useMapStore from '../store/useMapStore'
 import useContactStore from '../store/useContactStore'
+
 import { resolveStationCenter } from '../utils/stationUtils'
 
 const REPORT_TYPES = [
@@ -14,7 +15,7 @@ const REPORT_TYPES = [
 
 export default function ReportPage() {
   const { id } = useParams()
-  const { extinguishers } = useMapStore()
+  const { extinguishers, updateExtinguisherStatus } = useMapStore()
   const { addReport } = useReportStore()
   const { getContact } = useContactStore()
 
@@ -47,6 +48,9 @@ export default function ReportPage() {
       status: '접수',
     }
     addReport(report)
+
+    // 지도 마커를 이상(빨강)으로 변경
+    updateExtinguisherStatus(id, '이상')
 
     // 이메일 발송
     if (contact.email) {
