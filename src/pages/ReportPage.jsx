@@ -122,8 +122,8 @@ export default function ReportPage() {
     )
   }
 
-  // 이미 신고된 소화기 안내 화면
-  if (activeReport) {
+  // 이미 신고된 소화기 안내 화면 (제출 중일 때는 표시 안 함)
+  if (activeReport && !submitting) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 max-w-sm w-full text-center">

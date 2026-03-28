@@ -25,14 +25,12 @@ export default async function handler(req, res) {
           <tr><td style="padding: 8px 0; color: #6b7280; width: 100px;">담당 소방서</td><td style="padding: 8px 0; font-weight: 600;">${station}</td></tr>
           <tr><td style="padding: 8px 0; color: #6b7280;">담당 센터</td><td style="padding: 8px 0; font-weight: 600;">${center}</td></tr>
           <tr style="background: #fef2f2;"><td style="padding: 8px 4px; color: #6b7280;">이상 유형</td><td style="padding: 8px 4px; font-weight: 700; color: #dc2626;">${type}</td></tr>
-          <tr><td style="padding: 8px 0; color: #6b7280;">소화기함</td><td style="padding: 8px 0;">${extName || extinguisherId}</td></tr>
+          <tr><td style="padding: 8px 0; color: #6b7280;">소화기함</td><td style="padding: 8px 0;">${extName || '-'}</td></tr>
+          <tr><td style="padding: 8px 0; color: #6b7280;">코드번호</td><td style="padding: 8px 0; font-family: monospace; font-size: 12px;">${extinguisherId}</td></tr>
           <tr><td style="padding: 8px 0; color: #6b7280;">위치</td><td style="padding: 8px 0;">${extAddress || '-'}</td></tr>
           ${memo ? `<tr><td style="padding: 8px 0; color: #6b7280;">추가 내용</td><td style="padding: 8px 0;">${memo}</td></tr>` : ''}
           <tr><td style="padding: 8px 0; color: #6b7280;">신고 시각</td><td style="padding: 8px 0;">${reportedAt}</td></tr>
         </table>
-        <div style="margin-top: 20px; padding: 12px 16px; background: #f9fafb; border-radius: 8px; font-size: 12px; color: #9ca3af;">
-          소화기함 ID: ${extinguisherId}
-        </div>
       </div>
     </div>
   `
