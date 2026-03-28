@@ -1,10 +1,17 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import useReportStore from '../store/useReportStore'
 import useMapStore from '../store/useMapStore'
 import useContactStore from '../store/useContactStore'
-
 import { resolveStationCenter } from '../utils/stationUtils'
+
+function toKST(isoString) {
+  return new Date(isoString).toLocaleString('ko-KR', {
+    timeZone: 'Asia/Seoul',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit',
+  })
+}
 
 const REPORT_TYPES = [
   { type: '소화기 없음', icon: '🚫', desc: '소화기가 없거나 수량이 부족합니다' },
@@ -18,7 +25,12 @@ export default function ReportPage() {
   const navigate = useNavigate()
   const { extinguishers, updateExtinguisherStatus } = useMapStore()
   const { reports, addReport } = useReportStore()
-  const { getContact } = useContactStore()
+  const { getContact, fetchContacts, isLoaded } = useContactStore()
+
+  // 연락처 미로드 시 서버에서 불러오기
+  useEffect(() => {
+    if (!isLoaded) fetchContacts()
+  }, [isLoaded, fetchContacts])
 
   // 스토어에 데이터 있으면 사용, 없으면 ID에서 직접 파싱
   const ext = extinguishers.find((e) => String(e.id) === String(id))
@@ -122,9 +134,7 @@ export default function ReportPage() {
           <div className="mt-5 p-3 bg-orange-50 rounded-xl text-xs text-orange-600 border border-orange-100">
             신고 유형: <span className="font-semibold">{activeReport.type}</span>
             <span className="mx-2 text-orange-300">·</span>
-            신고 시각: <span className="font-semibold">
-              {activeReport.reportedAt.slice(0, 16).replace('T', ' ')}
-            </span>
+            신고 시각: <span className="font-semibold">{toKST(activeReport.reportedAt)}</span>
           </div>
           <button
             onClick={() => navigate('/')}

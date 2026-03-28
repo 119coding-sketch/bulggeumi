@@ -5,6 +5,14 @@ import useMapStore from '../store/useMapStore'
 import useReportStore from '../store/useReportStore'
 import fireStations from '../data/fireStations'
 
+function toKST(isoString) {
+  return new Date(isoString).toLocaleString('ko-KR', {
+    timeZone: 'Asia/Seoul',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit',
+  })
+}
+
 const STATUS_ORDER = ['접수', '완료']
 const STATUS_STYLE = {
   접수:   { bg: 'bg-blue-100',  text: 'text-blue-700'  },
@@ -225,7 +233,7 @@ export default function AdminDashboardPage() {
                   return (
                     <tr key={report.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
-                        {report.reportedAt.slice(0, 16).replace('T', ' ')}
+                        {toKST(report.reportedAt)}
                       </td>
                       <td className="px-4 py-3 font-medium">{ext?.name ?? '-'}</td>
                       <td className="px-4 py-3 text-gray-500 max-w-xs truncate">{ext?.address ?? '-'}</td>
