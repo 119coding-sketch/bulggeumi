@@ -37,6 +37,7 @@ export default function Map() {
       center={SEOUL_CENTER}
       zoom={DEFAULT_ZOOM}
       className="h-full w-full"
+      zoomControl={false}
     >
       <TileLayer
         attribution='&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'

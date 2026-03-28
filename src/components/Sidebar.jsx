@@ -50,6 +50,12 @@ export default function Sidebar() {
             </button>
           )}
           <Link
+            to="/admin/contacts"
+            className="text-xs text-gray-400 hover:text-red-500 border border-gray-200 px-2 py-1 rounded transition-colors"
+          >
+            연락처
+          </Link>
+          <Link
             to="/admin/login"
             className="text-xs text-gray-400 hover:text-red-500 border border-gray-200 px-2 py-1 rounded transition-colors"
           >

@@ -1,4 +1,6 @@
-// Vercel 서버리스 함수 — 신고 접수 시 이메일 알림 발송 (Resend)
+// Vercel 서버리스 함수 — 신고 접수 시 이메일 알림 발송 (Gmail SMTP)
+import nodemailer from 'nodemailer'
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end()
 
@@ -6,8 +8,9 @@ export default async function handler(req, res) {
 
   if (!email) return res.status(400).json({ error: '수신 이메일 없음' })
 
-  const RESEND_API_KEY = process.env.RESEND_API_KEY
-  if (!RESEND_API_KEY) return res.status(500).json({ error: 'RESEND_API_KEY 미설정' })
+  const GMAIL_USER = process.env.GMAIL_USER
+  const GMAIL_PASS = process.env.GMAIL_PASS
+  if (!GMAIL_USER || !GMAIL_PASS) return res.status(500).json({ error: 'Gmail 환경변수 미설정' })
 
   const reportedAt = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })
 
@@ -35,29 +38,24 @@ export default async function handler(req, res) {
   `
 
   try {
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: GMAIL_USER,
+        pass: GMAIL_PASS,
       },
-      body: JSON.stringify({
-        from: '불끄미 <noreply@bulggeumi.vercel.app>',
-        to: [email],
-        subject: `[불끄미] ${station} ${center} — ${type} 신고 접수`,
-        html,
-      }),
     })
 
-    if (!response.ok) {
-      const err = await response.json()
-      console.error('[notify] Resend 오류:', err)
-      return res.status(500).json({ error: 'Resend 발송 실패', detail: err })
-    }
+    await transporter.sendMail({
+      from: `불끄미 <${GMAIL_USER}>`,
+      to: email,
+      subject: `[불끄미] ${station} ${center} — ${type} 신고 접수`,
+      html,
+    })
 
     return res.status(200).json({ ok: true })
   } catch (err) {
-    console.error('[notify] 발송 오류:', err.message)
+    console.error('[notify] Gmail 발송 오류:', err.message)
     return res.status(500).json({ error: err.message })
   }
 }

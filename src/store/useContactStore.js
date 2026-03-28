@@ -68,6 +68,25 @@ const useContactStore = create((set, get) => ({
     if (!res.ok) throw new Error('저장 실패')
   },
 
+  /** 특정 센터 연락처 삭제 (로컬 + 서버) */
+  deleteContact: async (station, center) => {
+    const res = await fetch('/api/contacts', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ station, center }),
+    })
+    if (!res.ok) throw new Error('삭제 실패')
+    set((state) => ({
+      contacts: {
+        ...state.contacts,
+        [station]: {
+          ...state.contacts[station],
+          [center]: { truckPhone: '', managerPhone: '', email: '' },
+        },
+      },
+    }))
+  },
+
   /** 특정 센터 연락처 반환 */
   getContact: (station, center) =>
     get().contacts[station]?.[center] ?? { truckPhone: '', managerPhone: '', email: '' },

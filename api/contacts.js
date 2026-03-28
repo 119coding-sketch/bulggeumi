@@ -28,5 +28,19 @@ export default async function handler(req, res) {
     }
   }
 
+  if (req.method === 'DELETE') {
+    const { station, center } = req.body
+    try {
+      const contacts = (await redis.get(KV_KEY)) ?? {}
+      if (contacts[station]) {
+        delete contacts[station][center]
+        await redis.set(KV_KEY, contacts)
+      }
+      return res.json({ ok: true })
+    } catch (err) {
+      return res.status(500).json({ error: err.message })
+    }
+  }
+
   res.status(405).end()
 }

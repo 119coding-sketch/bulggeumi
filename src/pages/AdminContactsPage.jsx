@@ -11,11 +11,12 @@ function isValidEmail(email) {
 
 export default function AdminContactsPage() {
   const navigate = useNavigate()
-  const { contacts, isLoaded, fetchContacts, updateContact, saveContact } = useContactStore()
+  const { contacts, isLoaded, fetchContacts, updateContact, saveContact, deleteContact } = useContactStore()
 
   const [selectedStation, setSelectedStation] = useState(ALL_STATIONS[0])
   const [savedCenter, setSavedCenter] = useState(null)
   const [savingCenter, setSavingCenter] = useState(null)
+  const [deletingCenter, setDeletingCenter] = useState(null)
   const [emailError, setEmailError] = useState(null)
   const [saveError, setSaveError] = useState(null)
 
@@ -25,6 +26,18 @@ export default function AdminContactsPage() {
   }, [fetchContacts])
 
   const centers = fireStations[selectedStation] ?? []
+
+  async function handleDelete(center) {
+    if (!confirm(`${center} 연락처를 삭제할까요?`)) return
+    setDeletingCenter(center)
+    try {
+      await deleteContact(selectedStation, center)
+    } catch {
+      setSaveError(center)
+    } finally {
+      setDeletingCenter(null)
+    }
+  }
 
   async function handleSave(center) {
     const contact = contacts[selectedStation]?.[center] ?? {}
@@ -101,8 +114,10 @@ export default function AdminContactsPage() {
               const contact = contacts[selectedStation]?.[center] ?? {}
               const isSaved = savedCenter === center
               const isSaving = savingCenter === center
+              const isDeleting = deletingCenter === center
               const hasError = emailError === center
               const hasNetworkError = saveError === center
+              const hasData = !!(contact.email || contact.truckPhone || contact.managerPhone)
 
               return (
                 <div key={center} className="bg-white rounded-xl border border-gray-100 shadow-sm px-5 py-4">
@@ -151,7 +166,17 @@ export default function AdminContactsPage() {
                       />
                     </div>
 
-                    <div className="pt-5">
+                    <div className="pt-5 flex gap-2">
+                      {hasData && (
+                        <button
+                          onClick={() => handleDelete(center)}
+                          disabled={isDeleting}
+                          className="text-sm px-3 py-2 border border-gray-200 text-gray-400 rounded-lg
+                            hover:border-red-300 hover:text-red-400 transition-colors whitespace-nowrap disabled:opacity-50"
+                        >
+                          {isDeleting ? '삭제 중...' : '삭제'}
+                        </button>
+                      )}
                       <button
                         onClick={() => handleSave(center)}
                         disabled={isSaving}
