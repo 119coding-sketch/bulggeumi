@@ -5,6 +5,8 @@
 - 화면이 의도대로 구현되지 않았으면 스스로 원인을 파악하고 수정한다
 - 사용자에게 묻지 말고 스스로 판단해서 진행한다
 - 단, 데이터 삭제·초기화 등 되돌릴 수 없는 작업은 먼저 알린다
+- 코드 수정 완료 후 항상 git commit + git push origin main 자동 실행
+- CLAUDE.md 수정로그·작업순서도 함께 업데이트 후 커밋·푸시
 
 ## 프로젝트 개요
 서울시 보이는소화기함에 QR코드/버튼을 부착해, 시민이 이상 상태를 신고하면
@@ -15,14 +17,15 @@
 - 담당자: 신고 목록 확인 → 출동 → 현장 결과보고(사진 포함) → 완료 처리
 
 ## 배포
-- **Vercel**: https://bulggeumi.vercel.app (자동 배포, GitHub main 브랜치 연동)
+- **Vercel**: https://bulggeumi-pn1z.vercel.app (자동 배포, GitHub main 브랜치 연동)
 - **GitHub**: https://github.com/119coding-sketch/bulggeumi
 - 로컬 개발: `npm run dev` → http://localhost:5173 (포트 충돌 시 5174)
 
 ## 기술 스택
 - React + Vite
 - react-leaflet + Leaflet (지도, CartoDB Light 타일)
-- Zustand (상태관리, useContactStore는 localStorage persist)
+- Zustand (상태관리)
+- nodemailer (Gmail SMTP 이메일 발송)
 - Axios (API 호출)
 - Tailwind CSS
 
@@ -55,7 +58,9 @@ src/
 └── index.css
 
 api/
-└── seoulProxy.js              # Vercel 서버리스 프록시 (Referer 헤더 설정)
+├── seoulProxy.js              # Vercel 서버리스 프록시 (Referer 헤더 설정)
+├── contacts.js                # 연락처 GET/POST/DELETE (Upstash Redis)
+└── notify.js                  # 신고 접수 이메일 알림 (Gmail SMTP, nodemailer)
 ```
 
 ## 데이터 스펙 (소화기 오브젝트)
@@ -97,19 +102,21 @@ api/
   - `VITE_MAP_API_KEY`: 지도 타일 API 키 (현재 CartoDB로 미사용)
   - `UPSTASH_REDIS_REST_URL`: Upstash Redis URL (Vercel Integration 자동 주입)
   - `UPSTASH_REDIS_REST_TOKEN`: Upstash Redis 토큰 (Vercel Integration 자동 주입)
+  - `GMAIL_USER`: 이메일 발송용 Gmail 주소
+  - `GMAIL_PASS`: Gmail 앱 비밀번호 (16자리)
 
 **페이지네이션**: 1000개씩, totalCount 헤더 파싱 → 전체 페이지 자동 요청 (10페이지 배치)
 
 ## 연락처 관리
-- `/admin/contacts` 페이지에서 소방서/센터별 연락처 등록·수정
-- 저장: 현재 localStorage (추후 Vercel KV로 마이그레이션 예정)
-- 필드: 소방차 번호, 본서 담당자 번호, 이메일
-- 전화번호: 숫자 입력 시 자동으로 010-1234-5678 형식으로 변환
+- `/admin/contacts` 페이지에서 소방서/센터별 연락처 등록·수정·삭제
+- 저장: Upstash Redis (api/contacts.js GET/POST/DELETE)
+- 필드: 이메일 (신고 알림 수신)
+- Sidebar 헤더에서 연락처 관리 바로가기 버튼 제공
 
 ## 신고 흐름
-1. 시민이 QR 스캔 → `/report/:extinguisherId`
+1. 시민이 QR 스캔 또는 지도에서 소화기 선택 → `/report/:extinguisherId`
 2. 신고 유형 선택 + 메모 입력 → 제출
-3. TODO: Vercel 서버리스 함수로 이메일(Resend) + SMS(알리고) 발송
+3. api/notify.js → Gmail SMTP로 담당 센터 이메일 알림 발송
 4. 담당자가 대시보드에서 신고 확인 → 출동 처리 → 완료 처리
 
 ## 작업 순서
@@ -123,9 +130,11 @@ api/
 8. ✅ Vercel 배포
 9. ✅ 연락처 관리 페이지 (센터별 전화/이메일)
 10. ✅ SearchCard — 소방서/센터 필터 + 소화기 검색 + 핀(pin) 기능
-11. ⬜ 이메일 알림 (Resend 연동)
+11. ✅ 이메일 알림 (Gmail SMTP, nodemailer)
 12. ⬜ SMS 알림 (알리고 연동)
 13. ✅ 연락처 서버 저장 (Upstash Redis via Vercel Integration)
+14. ✅ 연락처 삭제 기능
+15. ✅ 지도 하단 신고하기 플로팅 버튼
 
 ## 코딩 규칙
 - 컴포넌트는 함수형으로 작성
@@ -162,3 +171,9 @@ api/
 - [2026-03-28] 연락처 저장소를 localStorage → Upstash Redis로 교체 (api/contacts.js GET/POST, @upstash/redis)
 - [2026-03-28] AdminContactsPage: fetchContacts(mount 시 서버 조회) + saveContact(저장 버튼 클릭 시 서버 저장) 연결
 - [2026-03-28] 환경변수 필요: UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN (Vercel Integration에서 자동 주입)
+- [2026-03-28] 이메일 알림 Resend → Gmail SMTP 교체 (nodemailer, GMAIL_USER/GMAIL_PASS 환경변수)
+- [2026-03-28] api/contacts.js DELETE 엔드포인트 추가, AdminContactsPage 삭제 버튼 추가
+- [2026-03-28] MapPage 지도 하단 신고하기 플로팅 버튼 추가 (소화기 선택 시 활성화)
+- [2026-03-28] Sidebar 헤더에 연락처 관리 바로가기 버튼 추가
+- [2026-03-28] Map zoomControl 비활성화 (SearchCard와 겹침 해소)
+- [2026-03-28] Vercel 배포 URL 확정: https://bulggeumi-pn1z.vercel.app
