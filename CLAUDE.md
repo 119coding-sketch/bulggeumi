@@ -124,7 +124,7 @@ api/
 2. ✅ API 연동 대비 구조 세팅
 3. ✅ 소방서/안전센터 계층 데이터 + 담당자 로그인 + 대시보드
 4. ✅ 신고 폼 UI (`/report/:id`) — 시민 QR 스캔 후 신고 제출
-5. ⬜ QR코드 생성 기능
+5. ✅ QR코드 생성 기능 (/qr/:id, Sidebar에서 접근)
 6. ⬜ 담당자 결과보고 (사진 첨부 포함)
 7. ✅ 실제 API 연결 (스마트서울맵, Vercel 프록시)
 8. ✅ Vercel 배포
@@ -188,3 +188,4 @@ api/
 - [2026-03-28] Map.jsx: fetchExtinguishers 완료 후 fetchReports 순차 실행 (마커 색상 올바르게 반영)
 - [2026-03-28] 반응형 디자인 적용 — SearchCard 모바일 접기/펼치기·목록 버튼, Sidebar 모바일 오버레이, AdminDashboardPage 카드뷰, AdminContactsPage 세로 배치
 - [2026-03-28] 담당자 로그인 제거 — '접수민원' 버튼 클릭 시 대시보드 직접 접근, RequireAuth 가드 삭제
+- [2026-03-28] QR코드 인쇄 기능 추가 — Sidebar 상세뷰에 'QR코드 인쇄' 버튼, /qr/:id 페이지 (qrcode.react)

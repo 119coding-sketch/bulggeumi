@@ -151,6 +151,13 @@ export default function Sidebar({ onClose }) {
                 이상 신고하기
               </Link>
             )}
+            <Link
+              to={`/qr/${selectedItem.id}`}
+              className="block w-full text-center text-sm font-semibold py-2.5 rounded-xl mt-2
+                border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors"
+            >
+              QR코드 인쇄
+            </Link>
           </div>
 
         ) : (
