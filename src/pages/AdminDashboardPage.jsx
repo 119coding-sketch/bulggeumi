@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import useAuthStore from '../store/useAuthStore'
 import useMapStore from '../store/useMapStore'
 import useReportStore from '../store/useReportStore'
 import fireStations from '../data/fireStations'
@@ -38,16 +37,13 @@ function StatusBadge({ status }) {
 
 export default function AdminDashboardPage() {
   const navigate  = useNavigate()
-  const { station: myStation, center: myCenter, logout } = useAuthStore()
   const { extinguishers, getCenterList } = useMapStore()
   const { reports, fetchReports, updateStatus } = useReportStore()
 
   useEffect(() => { fetchReports() }, [fetchReports])
 
-  // 소방서 필터 — 기본값: 로그인한 소방서
-  const [filterStation, setFilterStation] = useState(myStation ?? ALL_STATIONS[0])
-  // 센터 필터 — 기본값: 로그인한 센터
-  const [filterCenter, setFilterCenter] = useState(myCenter ?? '전체')
+  const [filterStation, setFilterStation] = useState(ALL_STATIONS[0])
+  const [filterCenter, setFilterCenter] = useState('전체')
 
   // 실제 로드된 데이터 기반 센터 목록
   const centerList = getCenterList(filterStation)
@@ -85,20 +81,12 @@ export default function AdminDashboardPage() {
     updateStatus(report.id, '완료')
   }
 
-  function handleLogout() {
-    logout()
-    navigate('/admin/login')
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
 
       {/* 헤더 */}
       <header className="bg-red-600 text-white px-4 md:px-6 py-3 md:py-4 flex items-center justify-between shadow">
-        <div className="min-w-0">
-          <span className="font-bold text-base md:text-lg">🧯 불끄미 담당자</span>
-          <span className="ml-2 text-xs md:text-sm text-red-200 truncate hidden sm:inline">{myStation} · {myCenter}</span>
-        </div>
+        <span className="font-bold text-base md:text-lg">🧯 불끄미 접수민원</span>
         <div className="flex items-center gap-2 md:gap-3 shrink-0">
           <button
             onClick={() => navigate('/admin/contacts')}
@@ -111,12 +99,6 @@ export default function AdminDashboardPage() {
             className="text-xs md:text-sm text-red-200 hover:text-white transition-colors"
           >
             지도
-          </button>
-          <button
-            onClick={handleLogout}
-            className="text-xs md:text-sm bg-red-700 hover:bg-red-800 px-2.5 md:px-3 py-1.5 rounded-lg transition-colors"
-          >
-            로그아웃
           </button>
         </div>
       </header>

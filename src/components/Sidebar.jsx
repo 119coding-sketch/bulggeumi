@@ -58,10 +58,10 @@ export default function Sidebar({ onClose }) {
             연락처
           </Link>
           <Link
-            to="/admin/login"
+            to="/admin/dashboard"
             className="text-xs text-gray-400 hover:text-red-500 border border-gray-200 px-2 py-1 rounded transition-colors"
           >
-            담당자
+            접수민원
           </Link>
           {onClose && (
             <button
