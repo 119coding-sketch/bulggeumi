@@ -4,7 +4,7 @@ import fireStations from '../data/fireStations'
 
 const ALL_STATIONS = Object.keys(fireStations)
 
-export default function SearchCard() {
+export default function SearchCard({ onOpenSidebar }) {
   const {
     filterStation, filterCenter,
     setFilterStation, setFilterCenter,
@@ -16,6 +16,7 @@ export default function SearchCard() {
 
   const [query, setQuery] = useState('')
   const [open, setOpen] = useState(false)
+  const [expanded, setExpanded] = useState(false)
   const inputRef = useRef(null)
   const cardRef = useRef(null)
 
@@ -61,15 +62,33 @@ export default function SearchCard() {
   return (
     <div
       ref={cardRef}
-      className="absolute top-4 left-4 z-[1000] w-72 bg-white rounded-xl shadow-lg border border-gray-100"
+      className="absolute top-2 left-2 right-2 md:top-4 md:left-4 md:right-auto md:w-72 z-[1000] bg-white rounded-xl shadow-lg border border-gray-100"
     >
       {/* 헤더 */}
-      <div className="px-4 py-3 bg-red-600 rounded-t-xl">
-        <h1 className="text-white font-bold text-base tracking-tight">🧯 불끄미</h1>
-        <p className="text-red-200 text-xs mt-0.5">보이는소화기 관리 시스템</p>
+      <div className="px-4 py-3 bg-red-600 rounded-t-xl flex items-center justify-between">
+        <div>
+          <h1 className="text-white font-bold text-base tracking-tight">🧯 불끄미</h1>
+          <p className="text-red-200 text-xs mt-0.5 hidden md:block">보이는소화기 관리 시스템</p>
+        </div>
+        {/* 모바일 전용 버튼 */}
+        <div className="flex items-center gap-2 md:hidden">
+          <button
+            onClick={onOpenSidebar}
+            className="text-xs text-white/80 bg-white/20 hover:bg-white/30 px-2.5 py-1.5 rounded-lg font-medium transition-colors"
+          >
+            목록 ☰
+          </button>
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="text-white/80 hover:text-white text-sm w-7 h-7 flex items-center justify-center"
+          >
+            {expanded ? '▲' : '▼'}
+          </button>
+        </div>
       </div>
 
-      <div className="px-3 py-3 space-y-2">
+      {/* 내용 — 모바일 collapsed 시 숨김 */}
+      <div className={`px-3 py-3 space-y-2 ${expanded ? 'block' : 'hidden md:block'}`}>
         {/* 소방서 선택 */}
         <div>
           <label className="text-xs text-gray-400 font-medium mb-1 block">소방서</label>

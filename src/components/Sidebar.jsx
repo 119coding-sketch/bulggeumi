@@ -18,7 +18,7 @@ function StatusBadge({ status }) {
   )
 }
 
-export default function Sidebar() {
+export default function Sidebar({ onClose }) {
   const {
     selectedItem, selectItem, clearSelection, flyTo,
     isLoading, loadedCount, error,
@@ -31,7 +31,7 @@ export default function Sidebar() {
   const inSearchMode = pinnedItems.length > 0
 
   return (
-    <aside className="w-72 h-full bg-white shadow-lg flex flex-col overflow-hidden border-l border-gray-100">
+    <aside className="w-72 md:w-72 w-full h-full bg-white shadow-lg flex flex-col overflow-hidden border-l border-gray-100">
 
       {/* 헤더 */}
       <div className="px-4 py-3 border-b flex items-center justify-between">
@@ -63,6 +63,14 @@ export default function Sidebar() {
           >
             담당자
           </Link>
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 text-lg leading-none ml-1"
+            >
+              ✕
+            </button>
+          )}
         </div>
       </div>
 

@@ -62,7 +62,7 @@ export default function AdminContactsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
 
-      <header className="bg-red-600 text-white px-6 py-4 flex items-center justify-between shadow">
+      <header className="bg-red-600 text-white px-4 md:px-6 py-3 md:py-4 flex items-center justify-between shadow">
         <div>
           <span className="font-bold text-lg">🧯 불끄미 담당자</span>
           <span className="ml-3 text-sm text-red-200">알림 수신 설정</span>
@@ -75,7 +75,7 @@ export default function AdminContactsPage() {
         </button>
       </header>
 
-      <main className="max-w-4xl mx-auto px-6 py-6">
+      <main className="max-w-4xl mx-auto px-4 md:px-6 py-4 md:py-6">
 
         <p className="text-sm text-gray-500 mb-4">
           신고 접수 시 알림을 받을 이메일을 센터별로 등록하세요.
@@ -127,7 +127,7 @@ export default function AdminContactsPage() {
                     {hasNetworkError && <span className="text-xs text-red-500">저장 실패 — 다시 시도해주세요</span>}
                   </div>
 
-                  <div className="flex gap-3 items-start">
+                  <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-start">
                     {/* 이메일 */}
                     <div className="flex-1">
                       <label className="text-xs text-gray-400 mb-1 block">
@@ -151,7 +151,7 @@ export default function AdminContactsPage() {
                     </div>
 
                     {/* 네이버웍스 (추후) */}
-                    <div className="flex-1">
+                    <div className="flex-1 hidden md:block">
                       <label className="text-xs text-gray-400 mb-1 block">
                         네이버웍스 채널 ID <span className="text-gray-300">(추후 연동)</span>
                       </label>
@@ -166,12 +166,12 @@ export default function AdminContactsPage() {
                       />
                     </div>
 
-                    <div className="pt-5 flex gap-2">
+                    <div className="md:pt-5 flex gap-2">
                       {hasData && (
                         <button
                           onClick={() => handleDelete(center)}
                           disabled={isDeleting}
-                          className="text-sm px-3 py-2 border border-gray-200 text-gray-400 rounded-lg
+                          className="flex-1 md:flex-none text-sm px-3 py-2 border border-gray-200 text-gray-400 rounded-lg
                             hover:border-red-300 hover:text-red-400 transition-colors whitespace-nowrap disabled:opacity-50"
                         >
                           {isDeleting ? '삭제 중...' : '삭제'}
@@ -180,7 +180,7 @@ export default function AdminContactsPage() {
                       <button
                         onClick={() => handleSave(center)}
                         disabled={isSaving}
-                        className="text-sm px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700
+                        className="flex-1 md:flex-none text-sm px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700
                           transition-colors whitespace-nowrap disabled:opacity-50"
                       >
                         {isSaving ? '저장 중...' : '저장'}

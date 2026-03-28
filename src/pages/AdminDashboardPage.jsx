@@ -94,34 +94,34 @@ export default function AdminDashboardPage() {
     <div className="min-h-screen bg-gray-50">
 
       {/* 헤더 */}
-      <header className="bg-red-600 text-white px-6 py-4 flex items-center justify-between shadow">
-        <div>
-          <span className="font-bold text-lg">🧯 불끄미 담당자</span>
-          <span className="ml-3 text-sm text-red-200">{myStation} · {myCenter}</span>
+      <header className="bg-red-600 text-white px-4 md:px-6 py-3 md:py-4 flex items-center justify-between shadow">
+        <div className="min-w-0">
+          <span className="font-bold text-base md:text-lg">🧯 불끄미 담당자</span>
+          <span className="ml-2 text-xs md:text-sm text-red-200 truncate hidden sm:inline">{myStation} · {myCenter}</span>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 md:gap-3 shrink-0">
           <button
             onClick={() => navigate('/admin/contacts')}
-            className="text-sm text-red-200 hover:text-white transition-colors"
+            className="text-xs md:text-sm text-red-200 hover:text-white transition-colors hidden sm:block"
           >
             연락처 관리
           </button>
           <button
             onClick={() => navigate('/')}
-            className="text-sm text-red-200 hover:text-white transition-colors"
+            className="text-xs md:text-sm text-red-200 hover:text-white transition-colors"
           >
-            지도 보기
+            지도
           </button>
           <button
             onClick={handleLogout}
-            className="text-sm bg-red-700 hover:bg-red-800 px-3 py-1.5 rounded-lg transition-colors"
+            className="text-xs md:text-sm bg-red-700 hover:bg-red-800 px-2.5 md:px-3 py-1.5 rounded-lg transition-colors"
           >
             로그아웃
           </button>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-6 py-6">
+      <main className="max-w-6xl mx-auto px-4 md:px-6 py-4 md:py-6">
 
         {/* ── 소방서 필터 ── */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm px-5 py-4 mb-4">
@@ -206,8 +206,52 @@ export default function AdminDashboardPage() {
           ))}
         </div>
 
-        {/* ── 신고 테이블 ── */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        {/* ── 신고 목록 (모바일 카드) ── */}
+        <div className="md:hidden space-y-3">
+          {filteredReports.length === 0 ? (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 px-4 py-10 text-center text-gray-400 text-sm">
+              신고 내역이 없습니다.
+            </div>
+          ) : (
+            filteredReports.map((report) => {
+              const ext = extMap[report.extinguisherId]
+              return (
+                <div key={report.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="min-w-0">
+                      <p className="font-medium text-sm truncate">{ext?.name ?? '-'}</p>
+                      <p className="text-xs text-gray-400 mt-0.5 truncate">{ext?.address ?? '-'}</p>
+                    </div>
+                    <StatusBadge status={report.status} />
+                  </div>
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-500">
+                    <span>{REPORT_TYPE_ICON[report.type] ?? '📋'} {report.type}</span>
+                    <span className="text-gray-200">·</span>
+                    <span className="px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-700 font-medium">
+                      {ext?.center ?? '-'}
+                    </span>
+                    <span className="text-gray-200">·</span>
+                    <span className="text-gray-400">{toKST(report.reportedAt)}</span>
+                  </div>
+                  {report.status !== '완료' ? (
+                    <button
+                      onClick={() => handleComplete(report)}
+                      className="mt-3 w-full text-xs py-2 rounded-lg bg-blue-50 text-blue-600
+                        hover:bg-blue-100 border border-blue-200 transition-colors"
+                    >
+                      조치완료
+                    </button>
+                  ) : (
+                    <p className="mt-2 text-xs text-gray-300 text-center">처리 완료</p>
+                  )}
+                </div>
+              )
+            })
+          )}
+        </div>
+
+        {/* ── 신고 테이블 (데스크톱) ── */}
+        <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-gray-50 text-xs text-gray-500 uppercase tracking-wider">
