@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import useMapStore from '../store/useMapStore'
+import useReportStore from '../store/useReportStore'
 
 const STATUS_STYLE = {
   정상:    { bg: 'bg-green-100',  text: 'text-green-700'  },
@@ -25,6 +26,7 @@ export default function Sidebar() {
     pinnedItems, unpinItem, clearSearch,
     updateExtinguisherStatus,
   } = useMapStore()
+  const { reports, updateStatus } = useReportStore()
 
   const filtered = getFiltered()
   const inSearchMode = pinnedItems.length > 0
@@ -121,7 +123,14 @@ export default function Sidebar() {
 
             {selectedItem.status === '이상' ? (
               <button
-                onClick={() => updateExtinguisherStatus(selectedItem.id, '정상')}
+                onClick={() => {
+                  updateExtinguisherStatus(selectedItem.id, '정상')
+                  // 해당 소화기의 미완료 신고도 완료 처리
+                  const active = reports.find(
+                    (r) => String(r.extinguisherId) === String(selectedItem.id) && r.status !== '완료'
+                  )
+                  if (active) updateStatus(active.id, '완료')
+                }}
                 className="block w-full text-center text-sm font-semibold py-2.5 rounded-xl
                   bg-blue-600 text-white hover:bg-blue-700 transition-colors"
               >
