@@ -15,6 +15,7 @@ export default function SearchCard({ onOpenSidebar }) {
   } = useMapStore()
 
   const [query, setQuery] = useState('')
+  const [debouncedQuery, setDebouncedQuery] = useState('')
   const [open, setOpen] = useState(false)
   const [expanded, setExpanded] = useState(false)
   const inputRef = useRef(null)
@@ -22,11 +23,17 @@ export default function SearchCard({ onOpenSidebar }) {
 
   const centerList = getCenterList(filterStation)
 
-  // 검색 결과: 현재 필터 내에서 query로 매칭
-  const results = query.trim().length > 0
+  // 검색어 디바운스 (300ms)
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedQuery(query), 300)
+    return () => clearTimeout(timer)
+  }, [query])
+
+  // 검색 결과: 현재 필터 내에서 debouncedQuery로 매칭
+  const results = debouncedQuery.trim().length > 0
     ? getFiltered()
         .filter((e) => {
-          const q = query.trim().toLowerCase()
+          const q = debouncedQuery.trim().toLowerCase()
           return (
             String(e.id).toLowerCase().includes(q) ||
             e.name.toLowerCase().includes(q) ||
@@ -39,7 +46,7 @@ export default function SearchCard({ onOpenSidebar }) {
   // 결과 목록이 바뀔 때마다 스토어에 저장
   useEffect(() => {
     if (results.length > 0) setSearchResults(results)
-  }, [query, filterStation, filterCenter])
+  }, [debouncedQuery, filterStation, filterCenter])
 
   // 카드 외부 클릭 시 드롭다운 닫기
   useEffect(() => {
@@ -159,7 +166,7 @@ export default function SearchCard({ onOpenSidebar }) {
             </ul>
           )}
 
-          {open && query.trim().length > 0 && results.length === 0 && (
+          {open && debouncedQuery.trim().length > 0 && results.length === 0 && (
             <div className="absolute top-full mt-1 left-0 right-0 bg-white border border-gray-200
               rounded-lg shadow-lg z-50 px-3 py-3 text-xs text-gray-400 text-center">
               검색 결과가 없습니다

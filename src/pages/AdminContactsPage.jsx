@@ -19,11 +19,28 @@ export default function AdminContactsPage() {
   const [deletingCenter, setDeletingCenter] = useState(null)
   const [emailError, setEmailError] = useState(null)
   const [saveError, setSaveError] = useState(null)
+  const [dirtySet, setDirtySet] = useState(new Set())
 
   // 페이지 진입 시 서버에서 연락처 불러오기
   useEffect(() => {
     fetchContacts()
   }, [fetchContacts])
+
+  // 미저장 변경사항 있을 때 브라우저 탭 닫기/새로고침 경고
+  useEffect(() => {
+    if (dirtySet.size === 0) return
+    const handler = (e) => { e.preventDefault(); e.returnValue = '' }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [dirtySet])
+
+  function handleSelectStation(name) {
+    if (dirtySet.size > 0 && !confirm('저장하지 않은 변경사항이 있습니다. 다른 소방서로 이동할까요?')) return
+    setSelectedStation(name)
+    setDirtySet(new Set())
+    setEmailError(null)
+    setSaveError(null)
+  }
 
   const centers = fireStations[selectedStation] ?? []
 
@@ -32,6 +49,7 @@ export default function AdminContactsPage() {
     setDeletingCenter(center)
     try {
       await deleteContact(selectedStation, center)
+      setDirtySet((prev) => { const next = new Set(prev); next.delete(center); return next })
     } catch {
       setSaveError(center)
     } finally {
@@ -51,6 +69,7 @@ export default function AdminContactsPage() {
     try {
       await saveContact(selectedStation, center)
       setSavedCenter(center)
+      setDirtySet((prev) => { const next = new Set(prev); next.delete(center); return next })
       setTimeout(() => setSavedCenter(null), 2000)
     } catch {
       setSaveError(center)
@@ -89,7 +108,7 @@ export default function AdminContactsPage() {
             {ALL_STATIONS.map((name) => (
               <button
                 key={name}
-                onClick={() => { setSelectedStation(name); setEmailError(null); setSaveError(null) }}
+                onClick={() => handleSelectStation(name)}
                 className={`px-3 py-1.5 rounded-lg text-sm border transition-colors
                   ${selectedStation === name
                     ? 'bg-red-600 text-white border-red-600 font-medium'
@@ -118,13 +137,17 @@ export default function AdminContactsPage() {
               const hasError = emailError === center
               const hasNetworkError = saveError === center
               const hasData = !!(contact.email || contact.truckPhone || contact.managerPhone)
+              const isDirty = dirtySet.has(center)
 
               return (
                 <div key={center} className="bg-white rounded-xl border border-gray-100 shadow-sm px-5 py-4">
                   <div className="flex items-center justify-between mb-3">
                     <p className="font-semibold text-sm text-gray-800">{center}</p>
-                    {isSaved && <span className="text-xs text-green-600 font-medium">✓ 저장됨</span>}
-                    {hasNetworkError && <span className="text-xs text-red-500">저장 실패 — 다시 시도해주세요</span>}
+                    <div className="flex items-center gap-2">
+                      {isDirty && !isSaved && <span className="text-xs text-orange-500 font-medium">미저장</span>}
+                      {isSaved && <span className="text-xs text-green-600 font-medium">✓ 저장됨</span>}
+                      {hasNetworkError && <span className="text-xs text-red-500">저장 실패 — 다시 시도해주세요</span>}
+                    </div>
                   </div>
 
                   <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-start">
@@ -138,6 +161,7 @@ export default function AdminContactsPage() {
                         value={contact.email ?? ''}
                         onChange={(e) => {
                           updateContact(selectedStation, center, 'email', e.target.value)
+                          setDirtySet((prev) => new Set([...prev, center]))
                           if (hasError) setEmailError(null)
                           if (hasNetworkError) setSaveError(null)
                         }}

@@ -51,11 +51,15 @@ export default function ReportPage() {
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [notifyError, setNotifyError] = useState(null)
+  const [submitError, setSubmitError] = useState(null)
+
+  const MEMO_MAX = 200
 
   async function handleSubmit() {
     if (!selectedType) return
     setSubmitting(true)
     setNotifyError(null)
+    setSubmitError(null)
 
     const report = {
       id: Date.now(),
@@ -65,7 +69,13 @@ export default function ReportPage() {
       reportedAt: new Date().toISOString(),
       status: '접수',
     }
-    await addReport(report)  // 마커 색상 변경 + Redis 저장
+    try {
+      await addReport(report)  // 마커 색상 변경 + Redis 저장
+    } catch {
+      setSubmitting(false)
+      setSubmitError('신고 접수에 실패했습니다. 잠시 후 다시 시도해주세요.')
+      return
+    }
 
     // 이메일 발송
     if (contact.email) {
@@ -205,13 +215,16 @@ export default function ReportPage() {
           </label>
           <textarea
             value={memo}
-            onChange={(e) => setMemo(e.target.value)}
+            onChange={(e) => setMemo(e.target.value.slice(0, MEMO_MAX))}
             placeholder="이상 내용을 자세히 적어주시면 빠른 대응에 도움이 됩니다."
             rows={3}
             className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5
               focus:outline-none focus:border-red-400 resize-none text-gray-700
               placeholder:text-gray-300"
           />
+          <p className={`text-xs text-right mt-1 ${memo.length >= MEMO_MAX ? 'text-red-400' : 'text-gray-300'}`}>
+            {memo.length}/{MEMO_MAX}
+          </p>
         </div>
 
         {/* 제출 버튼 */}
@@ -227,6 +240,9 @@ export default function ReportPage() {
           {submitting ? '신고 접수 중...' : '신고 제출'}
         </button>
 
+        {submitError && (
+          <p className="mt-3 text-xs text-red-500 text-center">{submitError}</p>
+        )}
         <p className="text-center text-xs text-gray-300 mt-4">
           허위 신고 시 불이익이 발생할 수 있습니다
         </p>

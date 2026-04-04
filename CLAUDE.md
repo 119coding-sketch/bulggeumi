@@ -189,3 +189,10 @@ api/
 - [2026-03-28] 반응형 디자인 적용 — SearchCard 모바일 접기/펼치기·목록 버튼, Sidebar 모바일 오버레이, AdminDashboardPage 카드뷰, AdminContactsPage 세로 배치
 - [2026-03-28] 담당자 로그인 제거 — '접수민원' 버튼 클릭 시 대시보드 직접 접근, RequireAuth 가드 삭제
 - [2026-03-28] QR코드 인쇄 기능 추가 — Sidebar 상세뷰에 'QR코드 인쇄' 버튼, /qr/:id 페이지 (qrcode.react)
+- [2026-04-04] ReportPage: addReport try-catch 추가, 제출 실패 시 사용자에게 오류 표시
+- [2026-04-04] ReportPage: 메모 200자 제한 + 글자수 카운터 표시
+- [2026-04-04] AdminDashboardPage: 신고 목록 최신순 정렬, 조치완료 버튼 confirm 다이얼로그 추가
+- [2026-04-04] Sidebar: STATUS_STYLE에 '이상' 케이스 추가 (빨강), 조치완료 confirm 다이얼로그 추가
+- [2026-04-04] Sidebar: 모바일에서 목록 항목 클릭 시 사이드바 자동 닫힘 (onClose 호출)
+- [2026-04-04] SearchCard: 검색 입력 디바운스 300ms 적용 (대용량 필터링 성능 개선)
+- [2026-04-04] AdminContactsPage: 미저장 변경사항 '미저장' 뱃지 표시, 소방서 전환/탭 닫기 시 경고

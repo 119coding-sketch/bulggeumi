@@ -64,8 +64,10 @@ export default function AdminDashboardPage() {
       .map((e) => e.id)
   )
 
-  // 신고 필터링
-  const filteredReports = reports.filter((r) => myExtinguisherIds.has(r.extinguisherId))
+  // 신고 필터링 + 최신순 정렬
+  const filteredReports = reports
+    .filter((r) => myExtinguisherIds.has(r.extinguisherId))
+    .sort((a, b) => new Date(b.reportedAt) - new Date(a.reportedAt))
 
   // 소화기 id → 소화기 객체
   const extMap = Object.fromEntries(extinguishers.map((e) => [e.id, e]))
@@ -78,6 +80,7 @@ export default function AdminDashboardPage() {
   }
 
   function handleComplete(report) {
+    if (!confirm('조치완료로 처리하시겠습니까?')) return
     updateStatus(report.id, '완료')
   }
 

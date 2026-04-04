@@ -7,6 +7,7 @@ const STATUS_STYLE = {
   정상:    { bg: 'bg-green-100',  text: 'text-green-700'  },
   점검필요: { bg: 'bg-yellow-100', text: 'text-yellow-700' },
   교체필요: { bg: 'bg-red-100',   text: 'text-red-700'    },
+  이상:    { bg: 'bg-red-100',   text: 'text-red-700'    },
 }
 
 function StatusBadge({ status }) {
@@ -131,6 +132,7 @@ export default function Sidebar({ onClose }) {
             {selectedItem.status === '이상' ? (
               <button
                 onClick={() => {
+                  if (!confirm('조치완료로 처리하시겠습니까?')) return
                   const active = reports.find(
                     (r) => String(r.extinguisherId) === String(selectedItem.id) && r.status !== '완료'
                   )
@@ -174,7 +176,7 @@ export default function Sidebar({ onClose }) {
                 <li
                   key={item.id}
                   className="px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
-                  onClick={() => { selectItem(item); flyTo(item) }}
+                  onClick={() => { selectItem(item); flyTo(item); onClose?.() }}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <p className="text-sm font-medium leading-snug">{item.name}</p>
