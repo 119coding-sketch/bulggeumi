@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import * as XLSX from 'xlsx'
 import useMapStore from '../store/useMapStore'
 import useReportStore from '../store/useReportStore'
 import fireStations from '../data/fireStations'
@@ -84,6 +85,40 @@ export default function AdminDashboardPage() {
     updateStatus(report.id, '완료')
   }
 
+  function handleExcelDownload() {
+    const rows = filteredReports.map((report) => {
+      const ext = extMap[report.extinguisherId]
+      const date = new Date(report.reportedAt)
+      return {
+        '신고일시': toKST(report.reportedAt),
+        '연도': date.getFullYear(),
+        '월': date.getMonth() + 1,
+        '일': date.getDate(),
+        '소방서': ext?.station ?? '-',
+        '안전센터': ext?.center ?? '-',
+        '소화기함명': ext?.name ?? '-',
+        '주소': ext?.address ?? '-',
+        '신고유형': report.type,
+        '메모': report.memo ?? '',
+        '상태': report.status,
+        '사진URL': report.imageUrl ?? '',
+      }
+    })
+
+    const ws = XLSX.utils.json_to_sheet(rows)
+    ws['!cols'] = [
+      { wch: 20 }, { wch: 6 }, { wch: 4 }, { wch: 4 },
+      { wch: 12 }, { wch: 15 }, { wch: 25 }, { wch: 35 },
+      { wch: 12 }, { wch: 30 }, { wch: 8 }, { wch: 50 },
+    ]
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, '신고내역')
+    const today = new Date().toLocaleDateString('ko-KR', {
+      year: 'numeric', month: '2-digit', day: '2-digit',
+    }).replace(/\. /g, '-').replace('.', '')
+    XLSX.writeFile(wb, `불끄미_신고내역_${today}.xlsx`)
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
 
@@ -91,6 +126,13 @@ export default function AdminDashboardPage() {
       <header className="bg-red-600 text-white px-4 md:px-6 py-3 md:py-4 flex items-center justify-between shadow">
         <span className="font-bold text-base md:text-lg">🧯 불끄미 접수민원</span>
         <div className="flex items-center gap-2 md:gap-3 shrink-0">
+          <button
+            onClick={handleExcelDownload}
+            disabled={filteredReports.length === 0}
+            className="text-xs md:text-sm text-red-200 hover:text-white transition-colors hidden sm:flex items-center gap-1 disabled:opacity-40"
+          >
+            📥 엑셀 다운로드
+          </button>
           <button
             onClick={() => navigate('/admin/contacts')}
             className="text-xs md:text-sm text-red-200 hover:text-white transition-colors hidden sm:block"
@@ -218,6 +260,15 @@ export default function AdminDashboardPage() {
                     <span className="text-gray-200">·</span>
                     <span className="text-gray-400">{toKST(report.reportedAt)}</span>
                   </div>
+                  {report.imageUrl && (
+                    <a href={report.imageUrl} target="_blank" rel="noopener noreferrer" className="block mt-2">
+                      <img
+                        src={report.imageUrl}
+                        alt="신고 사진"
+                        className="w-full h-32 object-cover rounded-lg border border-gray-100"
+                      />
+                    </a>
+                  )}
                   {report.status !== '완료' ? (
                     <button
                       onClick={() => handleComplete(report)}
@@ -245,6 +296,7 @@ export default function AdminDashboardPage() {
                 <th className="px-4 py-3 text-left">주소</th>
                 <th className="px-4 py-3 text-left">담당센터</th>
                 <th className="px-4 py-3 text-left">신고유형</th>
+                <th className="px-4 py-3 text-left">사진</th>
                 <th className="px-4 py-3 text-left">상태</th>
                 <th className="px-4 py-3 text-left">처리</th>
               </tr>
@@ -252,7 +304,7 @@ export default function AdminDashboardPage() {
             <tbody className="divide-y">
               {filteredReports.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-10 text-center text-gray-400">
+                  <td colSpan={8} className="px-4 py-10 text-center text-gray-400">
                     신고 내역이 없습니다.
                   </td>
                 </tr>
@@ -273,6 +325,19 @@ export default function AdminDashboardPage() {
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         {REPORT_TYPE_ICON[report.type] ?? '📋'} {report.type}
+                      </td>
+                      <td className="px-4 py-3">
+                        {report.imageUrl ? (
+                          <a href={report.imageUrl} target="_blank" rel="noopener noreferrer">
+                            <img
+                              src={report.imageUrl}
+                              alt="신고 사진"
+                              className="w-16 h-16 object-cover rounded-lg border border-gray-100 hover:opacity-80 transition-opacity"
+                            />
+                          </a>
+                        ) : (
+                          <span className="text-xs text-gray-300">없음</span>
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         <StatusBadge status={report.status} />

@@ -15,9 +15,9 @@ const useReportStore = create((set, get) => ({
       const reports = Array.isArray(data) ? data : []
       set({ reports, isLoaded: true })
 
-      // 활성 신고가 있는 소화기 마커를 이상(빨강)으로 표시
+      // 활성 신고가 있는 소화기 마커를 이상(빨강)으로 표시 (이상없음 타입 제외)
       const { updateExtinguisherStatus } = useMapStore.getState()
-      reports.filter((r) => r.status !== '완료').forEach((r) => {
+      reports.filter((r) => r.status !== '완료' && r.type !== '이상없음').forEach((r) => {
         updateExtinguisherStatus(String(r.extinguisherId), '이상')
       })
     } catch {
@@ -28,7 +28,10 @@ const useReportStore = create((set, get) => ({
   /** 신고 추가 (로컬 즉시 반영 + Redis 저장) */
   addReport: async (report) => {
     set((state) => ({ reports: [report, ...state.reports] }))
-    useMapStore.getState().updateExtinguisherStatus(String(report.extinguisherId), '이상')
+    // 이상없음은 마커 색상 변경 안 함
+    if (report.type !== '이상없음') {
+      useMapStore.getState().updateExtinguisherStatus(String(report.extinguisherId), '이상')
+    }
     try {
       await fetch('/api/reports', {
         method: 'POST',
