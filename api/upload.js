@@ -10,7 +10,12 @@ export default async function handler(req, res) {
     const filename = req.headers['x-filename'] ?? `report-${Date.now()}.jpg`
     const contentType = req.headers['x-content-type'] ?? 'image/jpeg'
 
-    const blob = await put(`reports/${filename}`, req, {
+    // req 스트림을 Buffer로 수집 후 업로드 (스트림 직접 전달 시 오류 발생 가능)
+    const chunks = []
+    for await (const chunk of req) chunks.push(chunk)
+    const buffer = Buffer.concat(chunks)
+
+    const blob = await put(`reports/${filename}`, buffer, {
       access: 'public',
       contentType,
     })

@@ -10,7 +10,7 @@ export default function MapPage() {
   const [showSidebar, setShowSidebar] = useState(false)
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden">
+    <div className="flex h-[100dvh] w-screen overflow-hidden">
       {/* 지도 영역 */}
       <div className="flex-1 relative">
         <Map />

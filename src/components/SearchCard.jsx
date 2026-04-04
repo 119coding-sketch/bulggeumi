@@ -69,10 +69,10 @@ export default function SearchCard({ onOpenSidebar }) {
   return (
     <div
       ref={cardRef}
-      className="absolute top-2 left-2 right-2 md:top-4 md:left-4 md:right-auto md:w-72 z-[1000] bg-white rounded-xl shadow-lg border border-gray-100"
+      className="absolute top-0 left-0 right-0 md:top-4 md:left-4 md:right-auto md:w-72 z-[1000] bg-white shadow-md md:shadow-lg md:rounded-xl md:border md:border-gray-100"
     >
       {/* 헤더 */}
-      <div className="px-4 py-3 bg-red-600 rounded-t-xl flex items-center justify-between">
+      <div className="px-4 py-3 bg-red-600 md:rounded-t-xl flex items-center justify-between">
         <div>
           <h1 className="text-white font-bold text-base tracking-tight">🧯 불끄미</h1>
           <p className="text-red-200 text-xs mt-0.5 hidden md:block">보이는소화기 관리 시스템</p>
