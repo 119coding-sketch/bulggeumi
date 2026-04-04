@@ -202,3 +202,5 @@ api/
 - [2026-04-04] useReportStore: 이상없음 타입은 마커 빨강 변경 제외
 - [2026-04-04] AdminDashboardPage: 신고 사진 썸네일 표시 (모바일 카드 + 데스크톱 테이블)
 - [2026-04-04] AdminDashboardPage: 엑셀 다운로드 버튼 추가 (xlsx, 신고일시/연도/월/일/소방서/센터/유형/사진URL)
+- [2026-04-04] Map.jsx: 마커 key에 status 포함 — 모바일에서 이상 마커가 빨간색으로 안 뜨는 버그 수정
+- [2026-04-04] Map.jsx: fetchReports await 추가 — 신고 데이터 로드 완료 후 마커 색상 보장

@@ -33,7 +33,7 @@ export default function Map() {
     // 소화기 로드 완료 후 신고 내역을 불러와 마커 색상에 반영
     async function init() {
       await fetchExtinguishers()
-      fetchReports()
+      await fetchReports()
     }
     init()
   }, [fetchExtinguishers, fetchReports])
@@ -51,7 +51,7 @@ export default function Map() {
       />
       <FlyToController />
       {filtered.map((item) => (
-        <Marker key={item.id} item={item} />
+        <Marker key={`${item.id}-${item.status}`} item={item} />
       ))}
     </MapContainer>
   )
