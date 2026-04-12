@@ -22,6 +22,6 @@ export default async function handler(req, res) {
 
     return res.json({ url: blob.url })
   } catch (err) {
-    return res.status(500).json({ error: err.message })
+    return res.status(500).json({ error: err.message, stack: err.stack })
   }
 }
