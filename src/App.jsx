@@ -40,14 +40,17 @@ export default function App() {
     <BrowserRouter>
       <AppInitializer>
         <Routes>
-          <Route path="/" element={<MapPage />} />
+          {/* 로그인 없이 접근 가능 — QR 스캔으로 접근하는 시민용 */}
           <Route path="/report/:id" element={<ReportPage />} />
           <Route path="/qr/:id" element={<QRPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+
+          {/* 로그인 필요 — 서울시 담당자/서포터즈 전용 */}
+          <Route path="/" element={<RequireAuth><MapPage /></RequireAuth>} />
           <Route path="/admin/dashboard" element={<RequireAuth><AdminDashboardPage /></RequireAuth>} />
           <Route path="/admin/contacts" element={<RequireAuth><AdminContactsPage /></RequireAuth>} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </AppInitializer>
     </BrowserRouter>

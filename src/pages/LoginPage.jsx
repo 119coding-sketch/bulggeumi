@@ -1,10 +1,15 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import useAuthStore from '../store/useAuthStore'
 
 export default function LoginPage() {
   const navigate = useNavigate()
-  const { setAuth } = useAuthStore()
+  const { user, isLoading, setAuth } = useAuthStore()
+
+  // 이미 로그인된 경우 홈으로 이동
+  useEffect(() => {
+    if (!isLoading && user) navigate('/', { replace: true })
+  }, [user, isLoading, navigate])
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
