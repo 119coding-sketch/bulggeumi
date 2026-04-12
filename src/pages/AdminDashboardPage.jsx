@@ -49,6 +49,8 @@ export default function AdminDashboardPage() {
 
   const [filterStation, setFilterStation] = useState(ALL_STATIONS[0])
   const [filterCenter, setFilterCenter] = useState('전체')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo]   = useState('')
 
   // QR 일괄 다운로드
   const [qrProgress, setQrProgress] = useState(null) // null | { done, total }
@@ -118,9 +120,15 @@ export default function AdminDashboardPage() {
       .map((e) => e.id)
   )
 
-  // 신고 필터링 + 최신순 정렬
+  // 신고 필터링 + 날짜 범위 + 최신순 정렬
   const filteredReports = reports
-    .filter((r) => myExtinguisherIds.has(r.extinguisherId))
+    .filter((r) => {
+      if (!myExtinguisherIds.has(r.extinguisherId)) return false
+      const dateStr = r.reportedAt.slice(0, 10)
+      if (dateFrom && dateStr < dateFrom) return false
+      if (dateTo   && dateStr > dateTo)   return false
+      return true
+    })
     .sort((a, b) => new Date(b.reportedAt) - new Date(a.reportedAt))
 
   // 소화기 id → 소화기 객체
@@ -131,6 +139,52 @@ export default function AdminDashboardPage() {
     total: filteredReports.length,
     접수:  filteredReports.filter((r) => r.status === '접수').length,
     완료:  filteredReports.filter((r) => r.status === '완료').length,
+  }
+
+  async function handleVisitsExcelDownload() {
+    const params = new URLSearchParams()
+    if (dateFrom) params.set('dateFrom', dateFrom)
+    if (dateTo)   params.set('dateTo', dateTo)
+    let visits = []
+    try {
+      const res = await fetch(`/api/visits?${params}`)
+      visits = await res.json()
+    } catch {
+      alert('방문기록을 불러오는 데 실패했습니다.')
+      return
+    }
+    if (!visits.length) { alert('해당 기간 방문기록이 없습니다.'); return }
+
+    const rows = visits.map((v) => {
+      const d = new Date(v.visitedAt)
+      return {
+        '방문일시': d.toLocaleString('ko-KR', {
+          timeZone: 'Asia/Seoul',
+          year: 'numeric', month: '2-digit', day: '2-digit',
+          hour: '2-digit', minute: '2-digit', second: '2-digit',
+        }),
+        '연도': d.getFullYear(),
+        '월': d.getMonth() + 1,
+        '일': d.getDate(),
+        '소화기함 ID': v.extinguisherId ?? '',
+        '소방서': v.station ?? '-',
+        '안전센터': v.center ?? '-',
+        '이메일': v.email ?? '-',
+        '이름': v.name ?? '-',
+      }
+    })
+
+    const ws = XLSX.utils.json_to_sheet(rows)
+    ws['!cols'] = [
+      { wch: 22 }, { wch: 6 }, { wch: 4 }, { wch: 4 },
+      { wch: 25 }, { wch: 12 }, { wch: 15 }, { wch: 28 }, { wch: 12 },
+    ]
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, '방문기록')
+    const today = new Date().toLocaleDateString('ko-KR', {
+      year: 'numeric', month: '2-digit', day: '2-digit',
+    }).replace(/\. /g, '-').replace('.', '')
+    XLSX.writeFile(wb, `불끄미_방문기록_${today}.xlsx`)
   }
 
   function handleExcelDownload() {
@@ -219,7 +273,13 @@ export default function AdminDashboardPage() {
             disabled={filteredReports.length === 0}
             className="text-xs md:text-sm text-red-200 hover:text-white transition-colors hidden sm:flex items-center gap-1 disabled:opacity-40"
           >
-            📥 엑셀 다운로드
+            📥 신고 엑셀
+          </button>
+          <button
+            onClick={handleVisitsExcelDownload}
+            className="text-xs md:text-sm text-red-200 hover:text-white transition-colors hidden sm:flex items-center gap-1"
+          >
+            📋 방문기록 엑셀
           </button>
           <button
             onClick={handleQrDownload}
@@ -301,6 +361,36 @@ export default function AdminDashboardPage() {
             </div>
           </div>
         )}
+
+        {/* ── 날짜 범위 필터 ── */}
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm px-5 py-4 mb-4">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+            기간 필터 <span className="normal-case font-normal text-gray-300">(신고일 기준)</span>
+          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-red-400 text-gray-700"
+            />
+            <span className="text-gray-300 text-sm">~</span>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-red-400 text-gray-700"
+            />
+            {(dateFrom || dateTo) && (
+              <button
+                onClick={() => { setDateFrom(''); setDateTo('') }}
+                className="text-xs text-gray-400 hover:text-red-500 px-2 py-1.5 rounded-lg border border-gray-200 hover:border-red-300 transition-colors"
+              >
+                초기화
+              </button>
+            )}
+          </div>
+        </div>
 
         {/* ── 현재 필터 표시 + 통계 ── */}
         <div className="flex items-center gap-2 mb-4">

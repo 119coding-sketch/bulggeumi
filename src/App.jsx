@@ -7,6 +7,7 @@ import ReportPage from './pages/ReportPage'
 import QRPage from './pages/QRPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import useAuthStore from './store/useAuthStore'
 
 // 로그인 필요 라우트 — 미로그인 시 /login으로 이동
@@ -45,6 +46,7 @@ export default function App() {
           <Route path="/qr/:id" element={<QRPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
           {/* 로그인 필요 — 서울시 담당자/서포터즈 전용 */}
           <Route path="/" element={<RequireAuth><MapPage /></RequireAuth>} />

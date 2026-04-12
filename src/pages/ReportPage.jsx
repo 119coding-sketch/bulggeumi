@@ -76,6 +76,25 @@ export default function ReportPage() {
     if (!isLoaded) fetchContacts()
   }, [isLoaded, fetchContacts])
 
+  // 방문 기록 (마운트 시 1회, fire-and-forget)
+  useEffect(() => {
+    const { station: s, center: c } = resolveStationCenter(id)
+    const token = localStorage.getItem('bulggeumi-token')
+    fetch('/api/visits', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({
+        visitedAt: new Date().toISOString(),
+        extinguisherId: id,
+        station: s,
+        center: c,
+      }),
+    }).catch(() => {})
+  }, [id]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const ext = extinguishers.find((e) => String(e.id) === String(id))
   const { station, center } = ext
     ? { station: ext.station, center: ext.center }
