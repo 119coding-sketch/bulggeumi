@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import useReportStore from '../store/useReportStore'
 import useMapStore from '../store/useMapStore'
 import useContactStore from '../store/useContactStore'
@@ -68,7 +68,6 @@ const MEMO_MAX = 200
 
 export default function ReportPage() {
   const { id } = useParams()
-  const navigate = useNavigate()
   const { extinguishers } = useMapStore()
   const { reports, addReport } = useReportStore()
   const { getContact, fetchContacts, isLoaded } = useContactStore()
@@ -193,10 +192,7 @@ export default function ReportPage() {
           <div className="mt-6 p-3 bg-gray-50 rounded-xl text-xs text-gray-400">
             확인 유형: <span className="font-medium text-gray-600">{selectedType}</span>
           </div>
-          <button onClick={() => navigate('/')}
-            className="mt-4 w-full py-2.5 rounded-xl text-sm font-semibold border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors">
-            지도로 돌아가기
-          </button>
+          <p className="mt-5 text-xs text-gray-300">다른 소화기함 점검은 현장 QR 코드를 스캔해주세요</p>
         </div>
       </div>
     )
@@ -216,10 +212,7 @@ export default function ReportPage() {
             <span className="mx-2 text-orange-300">·</span>
             신고 시각: <span className="font-semibold">{toKST(activeReport.reportedAt)}</span>
           </div>
-          <button onClick={() => navigate('/')}
-            className="mt-4 w-full py-2.5 rounded-xl text-sm font-semibold border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors">
-            지도로 돌아가기
-          </button>
+          <p className="mt-5 text-xs text-gray-300">다른 소화기함 점검은 현장 QR 코드를 스캔해주세요</p>
         </div>
       </div>
     )
