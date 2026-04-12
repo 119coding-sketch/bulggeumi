@@ -134,6 +134,12 @@ export default function AdminDashboardPage() {
             📥 엑셀 다운로드
           </button>
           <button
+            onClick={() => navigate('/admin/activities')}
+            className="text-xs md:text-sm text-red-200 hover:text-white transition-colors hidden sm:block"
+          >
+            서포터즈 활동
+          </button>
+          <button
             onClick={() => navigate('/admin/contacts')}
             className="text-xs md:text-sm text-red-200 hover:text-white transition-colors hidden sm:block"
           >
