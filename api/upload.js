@@ -6,6 +6,10 @@ export const config = { api: { bodyParser: false } }
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end()
 
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    return res.status(500).json({ error: 'BLOB_READ_WRITE_TOKEN 환경변수가 없습니다. Vercel Storage에서 프로젝트 연결을 확인하세요.' })
+  }
+
   try {
     const filename = req.headers['x-filename'] ?? `report-${Date.now()}.jpg`
     const contentType = req.headers['x-content-type'] ?? 'image/jpeg'
