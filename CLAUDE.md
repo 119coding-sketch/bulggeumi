@@ -217,3 +217,4 @@ api/
 - [2026-04-12] api/upload.js 삭제 (구버전 Vercel Blob, 미사용)
 - [2026-04-12] 엑셀 사진URL 셀에 하이퍼링크 적용 (클릭 시 브라우저에서 이미지 열림)
 - [2026-04-12] 활동기록 기능 전면 제거 — ReportPage 탭/상태/핸들러, ActivitiesPage, AdminActivitiesPage, api/activities.js, App 라우트, 대시보드 버튼 모두 삭제
+- [2026-04-12] QR 일괄 다운로드 — 대시보드 소방서/센터 필터 기준으로 QR PNG ZIP 다운로드 (100개 배치, 진행률 표시, 소방서/센터 폴더 구조)

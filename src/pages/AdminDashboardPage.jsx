@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import * as XLSX from 'xlsx'
+import QRCode from 'qrcode'
+import JSZip from 'jszip'
 import useMapStore from '../store/useMapStore'
 import useReportStore from '../store/useReportStore'
 import fireStations from '../data/fireStations'
@@ -46,6 +48,50 @@ export default function AdminDashboardPage() {
 
   const [filterStation, setFilterStation] = useState(ALL_STATIONS[0])
   const [filterCenter, setFilterCenter] = useState('전체')
+
+  // QR 일괄 다운로드
+  const [qrProgress, setQrProgress] = useState(null) // null | { done, total }
+
+  async function handleQrDownload() {
+    // 현재 필터 기준 소화기 목록
+    const targets = extinguishers.filter((e) =>
+      e.station === filterStation &&
+      (filterCenter === '전체' || e.center === filterCenter)
+    )
+    if (targets.length === 0) return alert('소화기 데이터가 없습니다. 잠시 후 다시 시도해주세요.')
+
+    const base = window.location.origin
+    const zip = new JSZip()
+    const BATCH = 100
+
+    setQrProgress({ done: 0, total: targets.length })
+
+    for (let i = 0; i < targets.length; i += BATCH) {
+      const batch = targets.slice(i, i + BATCH)
+      await Promise.all(batch.map(async (ext) => {
+        const url = `${base}/report/${ext.id}`
+        // 소방서/센터 폴더 구조로 저장
+        const folder = `${ext.station}/${ext.center ?? '공용'}`
+        const filename = `${ext.id}.png`
+        const dataUrl = await QRCode.toDataURL(url, { width: 300, margin: 2 })
+        // base64 부분만 추출
+        const base64 = dataUrl.split(',')[1]
+        zip.folder(folder).file(filename, base64, { base64: true })
+      }))
+      setQrProgress({ done: Math.min(i + BATCH, targets.length), total: targets.length })
+      // UI 업데이트 숨 고르기
+      await new Promise((r) => setTimeout(r, 0))
+    }
+
+    const blob = await zip.generateAsync({ type: 'blob' })
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    const label = filterCenter === '전체' ? filterStation : `${filterStation}_${filterCenter}`
+    a.download = `불끄미_QR_${label}.zip`
+    a.click()
+    URL.revokeObjectURL(a.href)
+    setQrProgress(null)
+  }
 
   function handleComplete(report) {
     if (!confirm('조치완료로 처리하시겠습니까?')) return
@@ -141,6 +187,26 @@ export default function AdminDashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50">
 
+      {/* QR 다운로드 진행률 오버레이 */}
+      {qrProgress && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center">
+          <div className="bg-white rounded-2xl shadow-xl p-8 w-72 text-center">
+            <p className="font-bold text-gray-800 mb-2">QR 코드 생성 중...</p>
+            <p className="text-sm text-gray-500 mb-4">
+              {qrProgress.done} / {qrProgress.total}개
+            </p>
+            <div className="w-full bg-gray-100 rounded-full h-2">
+              <div
+                className="bg-red-500 h-2 rounded-full transition-all"
+                style={{ width: `${Math.round(qrProgress.done / qrProgress.total * 100)}%` }}
+              />
+            </div>
+            <p className="text-xs text-gray-400 mt-3">
+              {Math.round(qrProgress.done / qrProgress.total * 100)}% — 완료 후 자동 다운로드됩니다
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* 헤더 */}
       <header className="bg-red-600 text-white px-4 md:px-6 py-3 md:py-4 flex items-center justify-between shadow">
@@ -152,6 +218,13 @@ export default function AdminDashboardPage() {
             className="text-xs md:text-sm text-red-200 hover:text-white transition-colors hidden sm:flex items-center gap-1 disabled:opacity-40"
           >
             📥 엑셀 다운로드
+          </button>
+          <button
+            onClick={handleQrDownload}
+            disabled={!!qrProgress || extinguishers.length === 0}
+            className="text-xs md:text-sm text-red-200 hover:text-white transition-colors hidden sm:flex items-center gap-1 disabled:opacity-40"
+          >
+            📦 QR 일괄 다운로드
           </button>
           <button
             onClick={() => navigate('/admin/contacts')}
