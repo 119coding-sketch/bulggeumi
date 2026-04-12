@@ -216,3 +216,4 @@ api/
 - [2026-04-12] 엑셀 다운로드: 사진URL 절대경로(window.location.origin) 변환 + 결과보고메모/사진/완료일시 컬럼 추가
 - [2026-04-12] api/upload.js 삭제 (구버전 Vercel Blob, 미사용)
 - [2026-04-12] 엑셀 사진URL 셀에 하이퍼링크 적용 (클릭 시 브라우저에서 이미지 열림)
+- [2026-04-12] 활동기록 기능 전면 제거 — ReportPage 탭/상태/핸들러, ActivitiesPage, AdminActivitiesPage, api/activities.js, App 라우트, 대시보드 버튼 모두 삭제

@@ -4,8 +4,6 @@ import AdminDashboardPage from './pages/AdminDashboardPage'
 import AdminContactsPage from './pages/AdminContactsPage'
 import ReportPage from './pages/ReportPage'
 import QRPage from './pages/QRPage'
-import ActivitiesPage from './pages/ActivitiesPage'
-import AdminActivitiesPage from './pages/AdminActivitiesPage'
 
 export default function App() {
   return (
@@ -16,8 +14,6 @@ export default function App() {
         <Route path="/admin/contacts" element={<AdminContactsPage />} />
         <Route path="/report/:id" element={<ReportPage />} />
         <Route path="/qr/:id" element={<QRPage />} />
-        <Route path="/activities" element={<ActivitiesPage />} />
-        <Route path="/admin/activities" element={<AdminActivitiesPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
