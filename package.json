@@ -13,6 +13,7 @@
     "@upstash/redis": "^1.37.0",
     "@vercel/blob": "^2.3.3",
     "axios": "^1.7.9",
+    "bcryptjs": "^3.0.3",
     "jszip": "^3.10.1",
     "leaflet": "^1.9.4",
     "nodemailer": "^8.0.4",
