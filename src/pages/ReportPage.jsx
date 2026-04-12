@@ -58,7 +58,7 @@ function compressImage(file) {
 async function uploadImage(file, prefix = 'report') {
   const filename = `${prefix}-${Date.now()}.jpg`
   const base64 = await compressImage(file)
-  const uploadRes = await fetch('/api/upload', {
+  const uploadRes = await fetch('/api/imgupload', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ filename, contentType: 'image/jpeg', data: base64 }),
