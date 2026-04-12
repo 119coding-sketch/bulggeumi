@@ -1,50 +1,10 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import * as XLSX from 'xlsx'
 import useMapStore from '../store/useMapStore'
 import useReportStore from '../store/useReportStore'
 import fireStations from '../data/fireStations'
 
-// 이미지를 Canvas로 압축 후 base64 반환 (최대 1024px, JPEG 0.75)
-function compressImage(file) {
-  return new Promise((resolve, reject) => {
-    const img = new Image()
-    const url = URL.createObjectURL(file)
-    img.onload = () => {
-      URL.revokeObjectURL(url)
-      const MAX = 1024
-      let { width, height } = img
-      if (width > MAX || height > MAX) {
-        if (width > height) { height = Math.round(height * MAX / width); width = MAX }
-        else { width = Math.round(width * MAX / height); height = MAX }
-      }
-      const canvas = document.createElement('canvas')
-      canvas.width = width; canvas.height = height
-      canvas.getContext('2d').drawImage(img, 0, 0, width, height)
-      canvas.toBlob((blob) => {
-        const reader = new FileReader()
-        reader.onload = () => resolve(reader.result.split(',')[1])
-        reader.onerror = reject
-        reader.readAsDataURL(blob)
-      }, 'image/jpeg', 0.75)
-    }
-    img.onerror = reject
-    img.src = url
-  })
-}
-
-async function uploadImage(file) {
-  const filename = `result-${Date.now()}.jpg`
-  const base64 = await compressImage(file)
-  const res = await fetch('/api/imgupload', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ filename, contentType: 'image/jpeg', data: base64 }),
-  })
-  if (!res.ok) throw new Error('upload failed')
-  const data = await res.json()
-  return data.url
-}
 
 function toKST(isoString) {
   return new Date(isoString).toLocaleString('ko-KR', {
@@ -87,64 +47,9 @@ export default function AdminDashboardPage() {
   const [filterStation, setFilterStation] = useState(ALL_STATIONS[0])
   const [filterCenter, setFilterCenter] = useState('전체')
 
-  // 결과보고 모달
-  const [resultModal, setResultModal] = useState(null) // null | report 객체
-  const [resultMemo, setResultMemo] = useState('')
-  const [resultFile, setResultFile] = useState(null)
-  const [resultPreview, setResultPreview] = useState(null)
-  const [resultSubmitting, setResultSubmitting] = useState(false)
-  const [resultError, setResultError] = useState(null)
-  const resultImageRef = useRef(null)
-
-  function openResultModal(report) {
-    setResultModal(report)
-    setResultMemo('')
-    setResultFile(null)
-    setResultPreview(null)
-    setResultError(null)
-  }
-
-  function closeResultModal() {
-    if (resultPreview) URL.revokeObjectURL(resultPreview)
-    setResultModal(null)
-    setResultFile(null)
-    setResultPreview(null)
-  }
-
-  function handleResultImageChange(e) {
-    const file = e.target.files[0]
-    if (!file) return
-    if (file.size > 10 * 1024 * 1024) {
-      setResultError('이미지 크기는 10MB 이하여야 합니다.')
-      return
-    }
-    setResultFile(file)
-    if (resultPreview) URL.revokeObjectURL(resultPreview)
-    setResultPreview(URL.createObjectURL(file))
-    setResultError(null)
-  }
-
-  async function handleResultSubmit() {
-    setResultSubmitting(true)
-    setResultError(null)
-    let imageUrl = null
-    if (resultFile) {
-      try {
-        imageUrl = await uploadImage(resultFile)
-      } catch {
-        setResultSubmitting(false)
-        setResultError('사진 업로드에 실패했습니다.')
-        return
-      }
-    }
-    const result = {
-      memo: resultMemo.trim(),
-      imageUrl,
-      completedAt: new Date().toISOString(),
-    }
-    await updateStatus(resultModal.id, '완료', result)
-    setResultSubmitting(false)
-    closeResultModal()
+  function handleComplete(report) {
+    if (!confirm('조치완료로 처리하시겠습니까?')) return
+    updateStatus(report.id, '완료')
   }
 
   // 실제 로드된 데이터 기반 센터 목록
@@ -211,9 +116,20 @@ export default function AdminDashboardPage() {
     ws['!cols'] = [
       { wch: 20 }, { wch: 6 }, { wch: 4 }, { wch: 4 },
       { wch: 12 }, { wch: 15 }, { wch: 25 }, { wch: 35 },
-      { wch: 12 }, { wch: 30 }, { wch: 8 }, { wch: 60 },
-      { wch: 30 }, { wch: 60 }, { wch: 20 },
+      { wch: 12 }, { wch: 30 }, { wch: 8 }, { wch: 40 },
+      { wch: 30 }, { wch: 40 }, { wch: 20 },
     ]
+    // 이미지 URL 셀에 하이퍼링크 적용 (엑셀에서 클릭 시 브라우저로 열림)
+    // L=신고사진URL, N=결과보고사진URL
+    const wsRange = XLSX.utils.decode_range(ws['!ref'])
+    for (let R = 1; R <= wsRange.e.r; R++) {
+      for (const col of ['L', 'N']) {
+        const addr = `${col}${R + 1}`
+        if (ws[addr] && ws[addr].v) {
+          ws[addr].l = { Target: ws[addr].v }
+        }
+      }
+    }
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, '신고내역')
     const today = new Date().toLocaleDateString('ko-KR', {
@@ -225,75 +141,6 @@ export default function AdminDashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50">
 
-      {/* ── 결과보고 모달 ── */}
-      {resultModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-5">
-            <h2 className="font-bold text-base text-gray-800 mb-1">결과보고</h2>
-            <p className="text-xs text-gray-400 mb-4 truncate">
-              {extMap[resultModal.extinguisherId]?.name ?? resultModal.extinguisherId}
-              &nbsp;·&nbsp;{REPORT_TYPE_ICON[resultModal.type] ?? '📋'} {resultModal.type}
-            </p>
-
-            {/* 처리 내용 */}
-            <div className="mb-4">
-              <label className="text-sm font-semibold text-gray-700 mb-1.5 block">
-                처리 내용 <span className="text-gray-400 font-normal">(선택)</span>
-              </label>
-              <textarea
-                value={resultMemo}
-                onChange={(e) => setResultMemo(e.target.value.slice(0, 200))}
-                placeholder="현장 조치 내용을 입력해주세요."
-                rows={3}
-                className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5
-                  focus:outline-none focus:border-blue-400 resize-none text-gray-700 placeholder:text-gray-300"
-              />
-              <p className={`text-xs text-right mt-1 ${resultMemo.length >= 200 ? 'text-red-400' : 'text-gray-300'}`}>
-                {resultMemo.length}/200
-              </p>
-            </div>
-
-            {/* 사진 첨부 */}
-            <div className="mb-5">
-              <label className="text-sm font-semibold text-gray-700 mb-1.5 block">
-                결과 사진 <span className="text-gray-400 font-normal">(선택)</span>
-              </label>
-              {resultPreview ? (
-                <div className="relative">
-                  <img src={resultPreview} alt="결과 사진"
-                    className="w-full h-40 object-cover rounded-xl border border-gray-200" />
-                  <button type="button"
-                    onClick={() => { URL.revokeObjectURL(resultPreview); setResultPreview(null); setResultFile(null) }}
-                    className="absolute top-2 right-2 bg-black/50 text-white w-7 h-7 rounded-full text-sm flex items-center justify-center">
-                    ✕
-                  </button>
-                </div>
-              ) : (
-                <button type="button" onClick={() => resultImageRef.current?.click()}
-                  className="w-full h-28 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-2 text-gray-400 hover:border-blue-300 hover:bg-blue-50 transition-all">
-                  <span className="text-2xl">📷</span>
-                  <span className="text-xs">사진 선택 (최대 10MB)</span>
-                </button>
-              )}
-              <input ref={resultImageRef} type="file" accept="image/*"
-                onChange={handleResultImageChange} className="hidden" />
-            </div>
-
-            {resultError && <p className="mb-3 text-xs text-red-500 text-center">{resultError}</p>}
-
-            <div className="flex gap-2">
-              <button onClick={closeResultModal} disabled={resultSubmitting}
-                className="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-gray-200 text-gray-500 hover:bg-gray-50">
-                취소
-              </button>
-              <button onClick={handleResultSubmit} disabled={resultSubmitting}
-                className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60">
-                {resultSubmitting ? (resultFile ? '업로드 중...' : '저장 중...') : '완료 처리'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* 헤더 */}
       <header className="bg-red-600 text-white px-4 md:px-6 py-3 md:py-4 flex items-center justify-between shadow">
@@ -450,25 +297,14 @@ export default function AdminDashboardPage() {
                   )}
                   {report.status !== '완료' ? (
                     <button
-                      onClick={() => openResultModal(report)}
+                      onClick={() => handleComplete(report)}
                       className="mt-3 w-full text-xs py-2 rounded-lg bg-blue-50 text-blue-600
                         hover:bg-blue-100 border border-blue-200 transition-colors"
                     >
-                      결과보고
+                      조치완료
                     </button>
                   ) : (
-                    <div className="mt-2">
-                      <p className="text-xs text-green-600 text-center font-medium">처리 완료</p>
-                      {report.result?.memo && (
-                        <p className="text-xs text-gray-400 text-center mt-0.5 truncate">{report.result.memo}</p>
-                      )}
-                      {report.result?.imageUrl && (
-                        <a href={report.result.imageUrl} target="_blank" rel="noopener noreferrer" className="block mt-1">
-                          <img src={report.result.imageUrl} alt="결과 사진"
-                            className="w-full h-20 object-cover rounded-lg border border-gray-100" />
-                        </a>
-                      )}
-                    </div>
+                    <p className="mt-2 text-xs text-gray-300 text-center">처리 완료</p>
                   )}
                 </div>
               )
@@ -535,25 +371,14 @@ export default function AdminDashboardPage() {
                       <td className="px-4 py-3">
                         {report.status !== '완료' ? (
                           <button
-                            onClick={() => openResultModal(report)}
+                            onClick={() => handleComplete(report)}
                             className="text-xs px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600
                               hover:bg-blue-100 border border-blue-200 transition-colors whitespace-nowrap"
                           >
-                            결과보고
+                            조치완료
                           </button>
                         ) : (
-                          <div>
-                            <span className="text-xs text-green-600 font-medium">처리 완료</span>
-                            {report.result?.memo && (
-                              <p className="text-xs text-gray-400 mt-0.5 max-w-[120px] truncate">{report.result.memo}</p>
-                            )}
-                            {report.result?.imageUrl && (
-                              <a href={report.result.imageUrl} target="_blank" rel="noopener noreferrer">
-                                <img src={report.result.imageUrl} alt="결과 사진"
-                                  className="mt-1 w-14 h-14 object-cover rounded-lg border border-gray-100 hover:opacity-80" />
-                              </a>
-                            )}
-                          </div>
+                          <span className="text-xs text-gray-300">처리 완료</span>
                         )}
                       </td>
                     </tr>
