@@ -22,6 +22,7 @@ export default async function handler(req, res) {
     const blob = await put(`reports/${filename}`, buffer, {
       access: 'public',
       contentType,
+      token: process.env.BLOB_READ_WRITE_TOKEN,
     })
 
     return res.json({ url: blob.url })
