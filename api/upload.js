@@ -16,9 +16,12 @@ export default async function handler(req, res) {
     console.log('[upload] filename:', filename, 'contentType:', contentType)
 
     // req 스트림을 Buffer로 수집
-    const chunks = []
-    for await (const chunk of req) chunks.push(chunk)
-    const buffer = Buffer.concat(chunks)
+    const buffer = await new Promise((resolve, reject) => {
+      const chunks = []
+      req.on('data', (chunk) => chunks.push(Buffer.from(chunk)))
+      req.on('end', () => resolve(Buffer.concat(chunks)))
+      req.on('error', reject)
+    })
     console.log('[upload] buffer size:', buffer.length)
 
     const blob = await put(`reports/${filename}`, buffer, {
