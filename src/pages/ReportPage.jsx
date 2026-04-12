@@ -366,6 +366,9 @@ export default function ReportPage() {
           <div className="text-3xl mb-2">🧯</div>
           <h1 className="text-xl font-bold text-gray-800">보이는소화기 점검</h1>
           <p className="text-sm text-gray-500 mt-1">불끄미 — 서울시 화재안전 현장관리</p>
+          <p className="mt-2 text-xs text-gray-400 font-mono bg-gray-100 inline-block px-2.5 py-1 rounded-lg">
+            {id}
+          </p>
         </div>
 
         {/* 모드 탭 */}
