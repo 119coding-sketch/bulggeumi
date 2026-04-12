@@ -207,3 +207,6 @@ api/
 - [2026-04-04] api/upload.js: req 스트림 → Buffer 수집 방식으로 변경 (500 오류 수정)
 - [2026-04-04] SearchCard: 모바일 상단 딱 붙임 (top-0 left-0 right-0, 라운드/테두리 제거)
 - [2026-04-04] MapPage: h-screen → h-[100dvh] (모바일 브라우저 주소창 높이 보정)
+- [2026-04-12] AdminActivitiesPage 신규 추가 (/admin/activities) — 관리자용 서포터즈 활동 현황 조회·엑셀 다운로드
+- [2026-04-12] api/activities.js: dateFrom/dateTo/station/center 쿼리 필터 추가
+- [2026-04-12] AdminDashboardPage 헤더에 '서포터즈 활동' 바로가기 버튼 추가
