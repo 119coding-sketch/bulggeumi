@@ -25,17 +25,43 @@ function getGPS() {
   })
 }
 
-// Vercel Blob에 이미지 업로드 후 URL 반환
+// 이미지를 Canvas로 압축 후 base64 반환 (최대 1024px, JPEG 0.75)
+function compressImage(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    const url = URL.createObjectURL(file)
+    img.onload = () => {
+      URL.revokeObjectURL(url)
+      const MAX = 1024
+      let { width, height } = img
+      if (width > MAX || height > MAX) {
+        if (width > height) { height = Math.round(height * MAX / width); width = MAX }
+        else { width = Math.round(width * MAX / height); height = MAX }
+      }
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height)
+      canvas.toBlob((blob) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(reader.result.split(',')[1])
+        reader.onerror = reject
+        reader.readAsDataURL(blob)
+      }, 'image/jpeg', 0.75)
+    }
+    img.onerror = reject
+    img.src = url
+  })
+}
+
+// 이미지 압축 → base64 JSON으로 업로드 후 URL 반환
 async function uploadImage(file, prefix = 'report') {
-  const fileExt = file.name.split('.').pop() || 'jpg'
+  const filename = `${prefix}-${Date.now()}.jpg`
+  const base64 = await compressImage(file)
   const uploadRes = await fetch('/api/upload', {
     method: 'POST',
-    headers: {
-      'x-filename': `${prefix}-${Date.now()}.${fileExt}`,
-      'x-content-type': file.type,
-      'Content-Type': file.type,
-    },
-    body: file,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ filename, contentType: 'image/jpeg', data: base64 }),
   })
   if (!uploadRes.ok) throw new Error('upload failed')
   const data = await uploadRes.json()
