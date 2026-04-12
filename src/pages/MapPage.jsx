@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import Map from '../components/Map'
 import Sidebar from '../components/Sidebar'
 import SearchCard from '../components/SearchCard'
+import TopBar from '../components/TopBar'
 import useMapStore from '../store/useMapStore'
 
 export default function MapPage() {
@@ -10,7 +11,10 @@ export default function MapPage() {
   const [showSidebar, setShowSidebar] = useState(false)
 
   return (
-    <div className="flex h-[100dvh] w-screen overflow-hidden">
+    <div className="flex flex-col h-[100dvh] w-screen overflow-hidden">
+      <TopBar />
+      {/* TopBar 높이(40px) 만큼 밀어내기 */}
+      <div className="flex flex-1 overflow-hidden pt-10">
       {/* 지도 영역 */}
       <div className="flex-1 relative">
         <Map />
@@ -52,6 +56,7 @@ export default function MapPage() {
           </div>
         </div>
       )}
+      </div>
     </div>
   )
 }

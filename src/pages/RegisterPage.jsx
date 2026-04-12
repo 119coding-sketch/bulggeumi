@@ -8,6 +8,7 @@ export default function RegisterPage() {
 
   // step: 'form' | 'verify'
   const [step, setStep] = useState('form')
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [passwordConfirm, setPasswordConfirm] = useState('')
@@ -19,6 +20,7 @@ export default function RegisterPage() {
     e.preventDefault()
     setError(null)
 
+    if (!name.trim()) return setError('이름을 입력해주세요.')
     if (!email.toLowerCase().endsWith('@seoul.go.kr')) {
       return setError('@seoul.go.kr 이메일만 가입 가능합니다.')
     }
@@ -34,7 +36,7 @@ export default function RegisterPage() {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.toLowerCase(), password }),
+        body: JSON.stringify({ email: email.toLowerCase(), password, name: name.trim() }),
       })
       const data = await res.json()
       if (!res.ok) return setError(data.error)
@@ -89,6 +91,21 @@ export default function RegisterPage() {
 
         {step === 'form' && (
           <form onSubmit={handleRegister} className="space-y-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                이름 <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="홍길동"
+                required
+                className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5
+                  focus:outline-none focus:border-red-400 text-gray-700 placeholder:text-gray-300"
+              />
+            </div>
+
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                 서울시 이메일 <span className="text-red-500">*</span>

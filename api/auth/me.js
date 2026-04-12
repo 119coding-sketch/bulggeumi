@@ -9,5 +9,6 @@ export default async function handler(req, res) {
   const email = await redis.get(`bulggeumi-session:${token}`)
   if (!email) return res.status(401).json({ error: 'Unauthorized' })
 
-  return res.json({ email })
+  const user = await redis.get(`bulggeumi-user:${email}`)
+  return res.json({ email, name: user?.name ?? '' })
 }

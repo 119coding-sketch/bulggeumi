@@ -5,8 +5,8 @@ import QRCode from 'qrcode'
 import JSZip from 'jszip'
 import useMapStore from '../store/useMapStore'
 import useReportStore from '../store/useReportStore'
-import useAuthStore from '../store/useAuthStore'
 import fireStations from '../data/fireStations'
+import TopBar from '../components/TopBar'
 
 
 function toKST(isoString) {
@@ -44,14 +44,8 @@ export default function AdminDashboardPage() {
   const navigate  = useNavigate()
   const { extinguishers, getCenterList } = useMapStore()
   const { reports, fetchReports, updateStatus } = useReportStore()
-  const { user, logout } = useAuthStore()
 
   useEffect(() => { fetchReports() }, [fetchReports])
-
-  async function handleLogout() {
-    await logout()
-    navigate('/login', { replace: true })
-  }
 
   const [filterStation, setFilterStation] = useState(ALL_STATIONS[0])
   const [filterCenter, setFilterCenter] = useState('전체')
@@ -192,7 +186,8 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pt-10">
+      <TopBar />
 
       {/* QR 다운로드 진행률 오버레이 */}
       {qrProgress && (
@@ -245,19 +240,6 @@ export default function AdminDashboardPage() {
           >
             지도
           </button>
-          {user && (
-            <>
-              <span className="hidden md:block text-xs text-red-300 truncate max-w-[140px]">
-                {user.email}
-              </span>
-              <button
-                onClick={handleLogout}
-                className="text-xs md:text-sm text-red-200 hover:text-white transition-colors border border-red-400 rounded-lg px-2 py-1"
-              >
-                로그아웃
-              </button>
-            </>
-          )}
         </div>
       </header>
 

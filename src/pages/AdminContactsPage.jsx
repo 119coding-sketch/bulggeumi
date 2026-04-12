@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import useContactStore from '../store/useContactStore'
 import fireStations from '../data/fireStations'
+import TopBar from '../components/TopBar'
 
 const ALL_STATIONS = Object.keys(fireStations)
 
@@ -79,7 +80,8 @@ export default function AdminContactsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pt-10">
+      <TopBar />
 
       <header className="bg-red-600 text-white px-4 md:px-6 py-3 md:py-4 flex items-center justify-between shadow">
         <div>

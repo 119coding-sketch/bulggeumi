@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs'
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end()
 
-  const { email, password } = req.body
+  const { email, password, name } = req.body
 
   // @seoul.go.kr 이메일만 허용
   if (!email || !email.toLowerCase().endsWith('@seoul.go.kr')) {
@@ -14,6 +14,9 @@ export default async function handler(req, res) {
   }
   if (!password || password.length < 8) {
     return res.status(400).json({ error: '비밀번호는 8자 이상이어야 합니다.' })
+  }
+  if (!name || !name.trim()) {
+    return res.status(400).json({ error: '이름을 입력해주세요.' })
   }
 
   const redis = Redis.fromEnv()
@@ -31,6 +34,7 @@ export default async function handler(req, res) {
   // 미인증 사용자 저장
   await redis.set(`bulggeumi-user:${normalizedEmail}`, {
     email: normalizedEmail,
+    name: name.trim(),
     passwordHash,
     verified: false,
     createdAt: new Date().toISOString(),
