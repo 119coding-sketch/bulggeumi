@@ -431,7 +431,7 @@ export default function AdminDashboardPage() {
                 <div key={report.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <div className="min-w-0">
-                      <p className="font-medium text-sm truncate">{ext?.name ?? '-'}</p>
+                      <p className="font-mono text-xs text-gray-600 truncate">{report.extinguisherId}</p>
                       <p className="text-xs text-gray-400 mt-0.5 truncate">{ext?.address ?? '-'}</p>
                     </div>
                     <StatusBadge status={report.status} />
@@ -477,7 +477,7 @@ export default function AdminDashboardPage() {
             <thead>
               <tr className="border-b bg-gray-50 text-xs text-gray-500 uppercase tracking-wider">
                 <th className="px-4 py-3 text-left">신고일시</th>
-                <th className="px-4 py-3 text-left">소화기함</th>
+                <th className="px-4 py-3 text-left">코드번호</th>
                 <th className="px-4 py-3 text-left">주소</th>
                 <th className="px-4 py-3 text-left">담당센터</th>
                 <th className="px-4 py-3 text-left">신고유형</th>
@@ -501,7 +501,7 @@ export default function AdminDashboardPage() {
                       <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
                         {toKST(report.reportedAt)}
                       </td>
-                      <td className="px-4 py-3 font-medium">{ext?.name ?? '-'}</td>
+                      <td className="px-4 py-3 font-mono text-xs text-gray-600">{report.extinguisherId}</td>
                       <td className="px-4 py-3 text-gray-500 max-w-xs truncate">{ext?.address ?? '-'}</td>
                       <td className="px-4 py-3">
                         <span className="px-2 py-0.5 rounded-full text-xs bg-orange-100 text-orange-700 font-medium whitespace-nowrap">
