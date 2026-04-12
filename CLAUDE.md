@@ -125,7 +125,7 @@ api/
 3. ✅ 소방서/안전센터 계층 데이터 + 담당자 로그인 + 대시보드
 4. ✅ 신고 폼 UI (`/report/:id`) — 시민 QR 스캔 후 신고 제출
 5. ✅ QR코드 생성 기능 (/qr/:id, Sidebar에서 접근)
-6. ⬜ 담당자 결과보고 (사진 첨부 포함)
+6. ✅ 담당자 결과보고 (사진 첨부 포함)
 7. ✅ 실제 API 연결 (스마트서울맵, Vercel 프록시)
 8. ✅ Vercel 배포
 9. ✅ 연락처 관리 페이지 (센터별 전화/이메일)
@@ -210,3 +210,8 @@ api/
 - [2026-04-12] AdminActivitiesPage 신규 추가 (/admin/activities) — 관리자용 서포터즈 활동 현황 조회·엑셀 다운로드
 - [2026-04-12] api/activities.js: dateFrom/dateTo/station/center 쿼리 필터 추가
 - [2026-04-12] AdminDashboardPage 헤더에 '서포터즈 활동' 바로가기 버튼 추가
+- [2026-04-12] 담당자 결과보고 기능 추가 — 대시보드에서 '결과보고' 버튼 클릭 시 모달(처리메모+사진첨부) → 완료 처리
+- [2026-04-12] api/reports.js PATCH: result 필드(메모/사진URL/완료일시) 함께 저장
+- [2026-04-12] useReportStore.updateStatus: result 파라미터 추가, 로컬·Redis 동시 반영
+- [2026-04-12] 엑셀 다운로드: 사진URL 절대경로(window.location.origin) 변환 + 결과보고메모/사진/완료일시 컬럼 추가
+- [2026-04-12] api/upload.js 삭제 (구버전 Vercel Blob, 미사용)

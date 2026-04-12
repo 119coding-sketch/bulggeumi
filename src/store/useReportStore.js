@@ -43,10 +43,12 @@ const useReportStore = create((set, get) => ({
     }
   },
 
-  /** 신고 상태 변경 (로컬 즉시 반영 + Redis 저장) */
-  updateStatus: async (reportId, status) => {
+  /** 신고 상태 변경 + 결과보고 저장 (로컬 즉시 반영 + Redis 저장) */
+  updateStatus: async (reportId, status, result = null) => {
     set((state) => ({
-      reports: state.reports.map((r) => r.id === reportId ? { ...r, status } : r),
+      reports: state.reports.map((r) =>
+        r.id === reportId ? { ...r, status, ...(result ? { result } : {}) } : r
+      ),
     }))
 
     // 조치완료 시 해당 소화기의 다른 활성 신고가 없으면 마커를 정상(파랑)으로
@@ -69,7 +71,7 @@ const useReportStore = create((set, get) => ({
       await fetch('/api/reports', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: reportId, status }),
+        body: JSON.stringify({ id: reportId, status, result }),
       })
     } catch (err) {
       console.error('[reports] 상태 업데이트 오류:', err.message)

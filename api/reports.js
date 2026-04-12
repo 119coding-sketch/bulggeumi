@@ -28,12 +28,14 @@ export default async function handler(req, res) {
     }
   }
 
-  // 신고 상태 변경 (조치완료 등)
+  // 신고 상태 변경 + 결과보고 저장
   if (req.method === 'PATCH') {
-    const { id, status } = req.body
+    const { id, status, result } = req.body
     try {
       const reports = (await redis.get(KV_KEY)) ?? []
-      const updated = reports.map((r) => r.id === id ? { ...r, status } : r)
+      const updated = reports.map((r) =>
+        r.id === id ? { ...r, status, ...(result ? { result } : {}) } : r
+      )
       await redis.set(KV_KEY, updated)
       return res.json({ ok: true })
     } catch (err) {
