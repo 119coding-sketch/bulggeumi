@@ -366,9 +366,6 @@ export default function ReportPage() {
           <div className="text-3xl mb-2">🧯</div>
           <h1 className="text-xl font-bold text-gray-800">보이는소화기 점검</h1>
           <p className="text-sm text-gray-500 mt-1">불끄미 — 서울시 화재안전 현장관리</p>
-          <p className="mt-2 text-xs text-gray-400 font-mono bg-gray-100 inline-block px-2.5 py-1 rounded-lg">
-            {id}
-          </p>
         </div>
 
         {/* 모드 탭 */}
@@ -392,6 +389,7 @@ export default function ReportPage() {
               <p className="font-semibold text-sm text-gray-800">{ext.name}</p>
               <p className="text-xs text-gray-400 mt-0.5">{ext.address}</p>
               <p className="text-xs text-gray-300 mt-1">{station} · {center}</p>
+              <p className="text-xs text-gray-300 mt-1 font-mono">코드번호 : {id}</p>
             </>
           ) : (
             <>
@@ -399,6 +397,7 @@ export default function ReportPage() {
               <p className="text-sm text-gray-700 font-medium mt-0.5">
                 {station || '확인 중'} {center ? `· ${center}` : ''}
               </p>
+              <p className="text-xs text-gray-300 mt-1 font-mono">코드번호 : {id}</p>
             </>
           )}
         </div>
