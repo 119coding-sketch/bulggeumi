@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import useAuthStore from '../store/useAuthStore'
 
 export default function TopBar() {
@@ -54,8 +54,6 @@ export default function TopBar() {
     }
   }
 
-  if (!user) return null
-
   return (
     <>
       {/* 상단 고정 바 */}
@@ -66,47 +64,56 @@ export default function TopBar() {
           <span className="font-bold text-sm hidden sm:block">불끄미</span>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="text-right">
-            <p className="text-xs font-semibold leading-tight">{user.name || user.email}</p>
-            <p className="text-[10px] text-red-200 leading-tight hidden sm:block">{user.email}</p>
-          </div>
+        {user ? (
+          <div className="flex items-center gap-3">
+            <div className="text-right">
+              <p className="text-xs font-semibold leading-tight">{user.name || user.email}</p>
+              <p className="text-[10px] text-red-200 leading-tight hidden sm:block">{user.email}</p>
+            </div>
 
-          {/* 메뉴 버튼 */}
-          <div className="relative">
-            <button
-              onClick={() => setShowMenu((v) => !v)}
-              className="w-8 h-8 rounded-full bg-red-700 hover:bg-red-800 flex items-center
-                justify-center text-white text-sm font-bold transition-colors"
-            >
-              {(user.name || user.email).charAt(0).toUpperCase()}
-            </button>
+            {/* 메뉴 버튼 */}
+            <div className="relative">
+              <button
+                onClick={() => setShowMenu((v) => !v)}
+                className="w-8 h-8 rounded-full bg-red-700 hover:bg-red-800 flex items-center
+                  justify-center text-white text-sm font-bold transition-colors"
+              >
+                {(user.name || user.email).charAt(0).toUpperCase()}
+              </button>
 
-            {showMenu && (
-              <>
-                {/* 바깥 클릭 닫기 */}
-                <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
-                <div className="absolute right-0 top-10 z-20 bg-white rounded-xl shadow-lg
-                  border border-gray-100 w-44 py-1 text-gray-700">
-                  <button
-                    onClick={openPwModal}
-                    className="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors"
-                  >
-                    🔑 비밀번호 변경
-                  </button>
-                  <hr className="my-1 border-gray-100" />
-                  <button
-                    onClick={handleLogout}
-                    className="w-full text-left px-4 py-2.5 text-sm text-red-600
-                      hover:bg-red-50 transition-colors"
-                  >
-                    로그아웃
-                  </button>
-                </div>
-              </>
-            )}
+              {showMenu && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
+                  <div className="absolute right-0 top-10 z-20 bg-white rounded-xl shadow-lg
+                    border border-gray-100 w-44 py-1 text-gray-700">
+                    <button
+                      onClick={openPwModal}
+                      className="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors"
+                    >
+                      🔑 비밀번호 변경
+                    </button>
+                    <hr className="my-1 border-gray-100" />
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-4 py-2.5 text-sm text-red-600
+                        hover:bg-red-50 transition-colors"
+                    >
+                      로그아웃
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
-        </div>
+        ) : (
+          <Link
+            to="/login"
+            className="text-xs font-semibold bg-white text-red-600 px-3 py-1.5 rounded-lg
+              hover:bg-red-50 transition-colors"
+          >
+            담당자 로그인
+          </Link>
+        )}
       </div>
 
       {/* 비밀번호 변경 모달 */}

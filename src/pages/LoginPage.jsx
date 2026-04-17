@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import useAuthStore from '../store/useAuthStore'
 
 export default function LoginPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const redirect = searchParams.get('redirect') || '/admin/dashboard'
   const { user, isLoading, setAuth } = useAuthStore()
 
-  // 이미 로그인된 경우 홈으로 이동
+  // 이미 로그인된 경우 목적지로 이동
   useEffect(() => {
-    if (!isLoading && user) navigate('/', { replace: true })
-  }, [user, isLoading, navigate])
+    if (!isLoading && user) navigate(redirect, { replace: true })
+  }, [user, isLoading, navigate, redirect])
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -31,7 +33,7 @@ export default function LoginPage() {
       if (!res.ok) return setError(data.error)
 
       setAuth(data.token, data.email)
-      navigate('/admin/dashboard', { replace: true })
+      navigate(redirect, { replace: true })
     } catch {
       setError('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.')
     } finally {

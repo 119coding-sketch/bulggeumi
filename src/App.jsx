@@ -48,11 +48,13 @@ export default function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
+          {/* 누구나 접근 가능 — 지도 메인 */}
+          <Route path="/" element={<MapPage />} />
+
           {/* 로그인 필요 — 서울시 담당자/서포터즈 전용 */}
-          <Route path="/" element={<RequireAuth><MapPage /></RequireAuth>} />
           <Route path="/admin/dashboard" element={<RequireAuth><AdminDashboardPage /></RequireAuth>} />
           <Route path="/admin/contacts" element={<RequireAuth><AdminContactsPage /></RequireAuth>} />
-          <Route path="*" element={<Navigate to="/login" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AppInitializer>
     </BrowserRouter>

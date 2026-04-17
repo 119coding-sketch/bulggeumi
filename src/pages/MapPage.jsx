@@ -1,14 +1,23 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import Map from '../components/Map'
 import Sidebar from '../components/Sidebar'
 import SearchCard from '../components/SearchCard'
 import TopBar from '../components/TopBar'
 import useMapStore from '../store/useMapStore'
+import useAuthStore from '../store/useAuthStore'
 
 export default function MapPage() {
+  const navigate = useNavigate()
   const { selectedItem } = useMapStore()
+  const { user } = useAuthStore()
   const [showSidebar, setShowSidebar] = useState(false)
+
+  function handleReport() {
+    if (!selectedItem) return
+    if (user) navigate(`/report/${selectedItem.id}`)
+    else navigate(`/login?redirect=${encodeURIComponent(`/report/${selectedItem.id}`)}`)
+  }
 
   return (
     <div className="flex flex-col h-[100dvh] w-screen overflow-hidden">
@@ -22,14 +31,14 @@ export default function MapPage() {
 
         {/* 신고하기 플로팅 버튼 */}
         {selectedItem ? (
-          <Link
-            to={`/report/${selectedItem.id}`}
+          <button
+            onClick={handleReport}
             className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[9999]
               bg-red-600 text-white text-sm font-semibold px-6 py-3 rounded-full shadow-lg
               hover:bg-red-700 transition-all flex items-center gap-2 whitespace-nowrap"
           >
             🧯 이상 신고하기
-          </Link>
+          </button>
         ) : (
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[9999]
             bg-white text-gray-400 text-xs md:text-sm px-4 md:px-5 py-2 md:py-2.5 rounded-full shadow border border-gray-100 whitespace-nowrap"

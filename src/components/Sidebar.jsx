@@ -1,7 +1,8 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import useMapStore from '../store/useMapStore'
 import useReportStore from '../store/useReportStore'
+import useAuthStore from '../store/useAuthStore'
 
 const STATUS_STYLE = {
   정상:    { bg: 'bg-green-100',  text: 'text-green-700'  },
@@ -20,6 +21,8 @@ function StatusBadge({ status }) {
 }
 
 export default function Sidebar({ onClose }) {
+  const navigate = useNavigate()
+  const { user } = useAuthStore()
   const {
     selectedItem, selectItem, clearSelection, flyTo,
     isLoading, loadedCount, error,
@@ -27,6 +30,12 @@ export default function Sidebar({ onClose }) {
     pinnedItems, unpinItem, clearSearch,
   } = useMapStore()
   const { reports, updateStatus } = useReportStore()
+
+  // 로그인 필요 기능: 미로그인 시 /login?redirect=... 으로 이동
+  function requireAuth(path) {
+    if (user) navigate(path)
+    else navigate(`/login?redirect=${encodeURIComponent(path)}`)
+  }
 
   const filtered = getFiltered()
   const inSearchMode = pinnedItems.length > 0
@@ -52,18 +61,18 @@ export default function Sidebar({ onClose }) {
               검색 초기화
             </button>
           )}
-          <Link
-            to="/admin/contacts"
+          <button
+            onClick={() => requireAuth('/admin/contacts')}
             className="text-xs text-gray-400 hover:text-red-500 border border-gray-200 px-2 py-1 rounded transition-colors"
           >
             연락처
-          </Link>
-          <Link
-            to="/admin/dashboard"
+          </button>
+          <button
+            onClick={() => requireAuth('/admin/dashboard')}
             className="text-xs text-gray-400 hover:text-red-500 border border-gray-200 px-2 py-1 rounded transition-colors"
           >
             접수민원
-          </Link>
+          </button>
           {onClose && (
             <button
               onClick={onClose}
@@ -132,6 +141,7 @@ export default function Sidebar({ onClose }) {
             {selectedItem.status === '이상' ? (
               <button
                 onClick={() => {
+                  if (!user) { navigate(`/login?redirect=/admin/dashboard`); return }
                   if (!confirm('조치완료로 처리하시겠습니까?')) return
                   const active = reports.find(
                     (r) => String(r.extinguisherId) === String(selectedItem.id) && r.status !== '완료'
@@ -145,21 +155,21 @@ export default function Sidebar({ onClose }) {
                 ✓ 조치완료 — 정상으로 변경
               </button>
             ) : (
-              <Link
-                to={`/report/${selectedItem.id}`}
+              <button
+                onClick={() => requireAuth(`/report/${selectedItem.id}`)}
                 className="block w-full text-center text-sm font-semibold py-2.5 rounded-xl
                   bg-red-600 text-white hover:bg-red-700 transition-colors"
               >
                 이상 신고하기
-              </Link>
+              </button>
             )}
-            <Link
-              to={`/qr/${selectedItem.id}`}
+            <button
+              onClick={() => requireAuth(`/qr/${selectedItem.id}`)}
               className="block w-full text-center text-sm font-semibold py-2.5 rounded-xl mt-2
                 border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors"
             >
               QR코드 인쇄
-            </Link>
+            </button>
           </div>
 
         ) : (
