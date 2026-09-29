@@ -23,7 +23,7 @@
 
 ## 기술 스택
 - React + Vite
-- react-leaflet + Leaflet (지도, CartoDB Light 타일)
+- react-leaflet + Leaflet (지도, OpenStreetMap 타일)
 - Zustand (상태관리)
 - nodemailer (Gmail SMTP 이메일 발송)
 - Axios (API 호출)
@@ -35,7 +35,7 @@ src/
 ├── api/
 │   └── seoulMap.js            # 스마트서울맵 API (fetchExtinguishers, resolveStationCenter)
 ├── components/
-│   ├── Map.jsx                # 지도 컨테이너 (CartoDB Light 타일) + FlyToController
+│   ├── Map.jsx                # 지도 컨테이너 (OpenStreetMap 타일) + FlyToController
 │   ├── Marker.jsx             # 지도 마커 + 팝업
 │   ├── SearchCard.jsx         # 지도 위 오버레이 카드 (소방서/센터 필터 + 소화기 검색 + 핀 기능)
 │   └── Sidebar.jsx            # 목록/상세 패널 (검색 모드 시 핀 목록 표시)
@@ -222,3 +222,4 @@ api/
 - [2026-04-12] 회원가입/로그인 기능 추가 — @seoul.go.kr 이메일만 가입 가능, 6자리 이메일 인증, 세션 토큰 Redis 저장(7일), /admin/* 라우트 RequireAuth 보호
 - [2026-04-12] 회원가입에 이름 필드 추가, TopBar 공통 컴포넌트 (이름/이메일 상시 표시 + 로그아웃 + 비밀번호 변경 모달), api/auth/change-password.js 추가
 - [2026-04-12] / (지도)도 RequireAuth 보호 추가 — 미로그인 시 /login 이동
+- [2026-09-29] 지도 타일 CartoDB → OpenStreetMap 교체 — CARTO가 API 키 없는 요청에 "API KEY REQUIRED" 이미지만 내려줘 지도 배경이 안 나오던 문제 (마커만 표시됨)
