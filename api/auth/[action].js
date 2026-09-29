@@ -27,7 +27,7 @@ async function register(req, res) {
 
   const redis = Redis.fromEnv()
   const normalizedEmail = email.toLowerCase()
-  const existing = await redis.get(`bulggeumi-user:${normalizedEmail}`)
+  const existing = await getUser(redis, normalizedEmail)   // 내장 관리자 이메일로 가입 막기
   if (existing?.verified) {
     return res.status(409).json({ error: '이미 가입된 이메일입니다.' })
   }
@@ -88,6 +88,20 @@ async function verify(req, res) {
   return res.json({ ok: true, token, email: normalizedEmail })
 }
 
+// ── 내장 관리자 계정 ──────────────────────────────────────
+// 이메일 인증 없이 바로 쓰는 관리자 계정 (시연·점검용). 비밀번호는 bcrypt 해시로만 둔다.
+const BUILTIN_ADMIN = {
+  email: '1@seoul.go.kr',
+  name: '관리자',
+  passwordHash: '$2b$10$S4kphMk5VcAjkfRZDSYP2OAX3kQH6PBkuoQnZAEPKcZjoKJWBJ4m.',
+  verified: true,
+}
+
+async function getUser(redis, email) {
+  if (email === BUILTIN_ADMIN.email) return BUILTIN_ADMIN
+  return redis.get(`bulggeumi-user:${email}`)
+}
+
 // ── login ─────────────────────────────────────────────────
 async function login(req, res) {
   if (req.method !== 'POST') return res.status(405).end()
@@ -96,7 +110,7 @@ async function login(req, res) {
 
   const normalizedEmail = email.toLowerCase()
   const redis = Redis.fromEnv()
-  const user = await redis.get(`bulggeumi-user:${normalizedEmail}`)
+  const user = await getUser(redis, normalizedEmail)
   if (!user) return res.status(401).json({ error: '이메일 또는 비밀번호가 올바르지 않습니다.' })
   if (!user.verified) return res.status(401).json({ error: '이메일 인증이 완료되지 않았습니다.' })
 
@@ -128,7 +142,7 @@ async function me(req, res) {
   const email = await redis.get(`bulggeumi-session:${token}`)
   if (!email) return res.status(401).json({ error: 'Unauthorized' })
 
-  const user = await redis.get(`bulggeumi-user:${email}`)
+  const user = await getUser(redis, email)
   return res.json({ email, name: user?.name ?? '' })
 }
 
@@ -149,6 +163,9 @@ async function changePassword(req, res) {
   const redis = Redis.fromEnv()
   const email = await redis.get(`bulggeumi-session:${token}`)
   if (!email) return res.status(401).json({ error: '세션이 만료되었습니다.' })
+  if (email === BUILTIN_ADMIN.email) {
+    return res.status(400).json({ error: '내장 관리자 계정은 비밀번호를 바꿀 수 없습니다.' })
+  }
 
   const user = await redis.get(`bulggeumi-user:${email}`)
   if (!user) return res.status(404).json({ error: '사용자를 찾을 수 없습니다.' })

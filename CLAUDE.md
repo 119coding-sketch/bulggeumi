@@ -223,3 +223,4 @@ api/
 - [2026-04-12] 회원가입에 이름 필드 추가, TopBar 공통 컴포넌트 (이름/이메일 상시 표시 + 로그아웃 + 비밀번호 변경 모달), api/auth/change-password.js 추가
 - [2026-04-12] / (지도)도 RequireAuth 보호 추가 — 미로그인 시 /login 이동
 - [2026-09-29] 지도 타일 CartoDB → OpenStreetMap 교체 — CARTO가 API 키 없는 요청에 "API KEY REQUIRED" 이미지만 내려줘 지도 배경이 안 나오던 문제 (마커만 표시됨)
+- [2026-09-29] 내장 관리자 계정 추가 (1@seoul.go.kr) — api/auth/[action].js BUILTIN_ADMIN, 이메일 인증 없이 로그인, 비밀번호는 bcrypt 해시만 저장, 비밀번호 변경·같은 이메일 가입 차단
