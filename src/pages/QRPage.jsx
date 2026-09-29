@@ -60,11 +60,12 @@ export default function QRPage() {
           🖨️ 인쇄하기
         </button>
 
+        {/* navigate(-1) 은 새 탭으로 열었을 때 갈 곳이 없어 지도로 직접 보낸다 */}
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => navigate(`/?focus=${encodeURIComponent(id)}`)}
           className="w-full py-2.5 rounded-xl border border-gray-200 text-gray-500 text-sm hover:bg-gray-50 transition-colors"
         >
-          돌아가기
+          ← 지도로 돌아가기
         </button>
 
       </div>

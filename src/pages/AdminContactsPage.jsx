@@ -88,12 +88,20 @@ export default function AdminContactsPage() {
           <span className="font-bold text-lg">🧯 불끄미 담당자</span>
           <span className="ml-3 text-sm text-red-200">알림 수신 설정</span>
         </div>
-        <button
-          onClick={() => navigate('/admin/dashboard')}
-          className="text-sm text-red-200 hover:text-white transition-colors"
-        >
-          ← 대시보드
-        </button>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate('/admin/dashboard')}
+            className="text-sm text-red-200 hover:text-white transition-colors"
+          >
+            ← 대시보드
+          </button>
+          <button
+            onClick={() => navigate('/')}
+            className="text-sm text-red-200 hover:text-white transition-colors"
+          >
+            지도
+          </button>
+        </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-4 md:px-6 py-4 md:py-6">

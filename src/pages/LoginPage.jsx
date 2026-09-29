@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import useAuthStore from '../store/useAuthStore'
+import BackToMap from '../components/BackToMap'
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -44,6 +45,8 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 w-full max-w-sm">
+
+        <BackToMap className="mb-4" />
 
         <div className="text-center mb-6">
           <div className="text-4xl mb-2">🧯</div>

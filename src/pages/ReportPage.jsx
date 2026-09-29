@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
+import BackToMap from '../components/BackToMap'
 import useReportStore from '../store/useReportStore'
 import useMapStore from '../store/useMapStore'
 import useContactStore from '../store/useContactStore'
@@ -211,7 +212,13 @@ export default function ReportPage() {
           <div className="mt-6 p-3 bg-gray-50 rounded-xl text-xs text-gray-400">
             확인 유형: <span className="font-medium text-gray-600">{selectedType}</span>
           </div>
-          <p className="mt-5 text-xs text-gray-300">다른 소화기함 점검은 현장 QR 코드를 스캔해주세요</p>
+          <Link
+            to={`/?focus=${encodeURIComponent(id)}`}
+            className="mt-6 block w-full py-3 rounded-xl bg-gray-800 text-white text-sm font-semibold hover:bg-gray-900 transition-colors"
+          >
+            🗺️ 지도에서 확인하기
+          </Link>
+          <p className="mt-4 text-xs text-gray-300">다른 소화기함 점검은 현장 QR 코드를 스캔해주세요</p>
         </div>
       </div>
     )
@@ -231,7 +238,13 @@ export default function ReportPage() {
             <span className="mx-2 text-orange-300">·</span>
             신고 시각: <span className="font-semibold">{toKST(activeReport.reportedAt)}</span>
           </div>
-          <p className="mt-5 text-xs text-gray-300">다른 소화기함 점검은 현장 QR 코드를 스캔해주세요</p>
+          <Link
+            to={`/?focus=${encodeURIComponent(id)}`}
+            className="mt-6 block w-full py-3 rounded-xl bg-gray-800 text-white text-sm font-semibold hover:bg-gray-900 transition-colors"
+          >
+            🗺️ 지도에서 확인하기
+          </Link>
+          <p className="mt-4 text-xs text-gray-300">다른 소화기함 점검은 현장 QR 코드를 스캔해주세요</p>
         </div>
       </div>
     )
@@ -240,6 +253,8 @@ export default function ReportPage() {
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-6">
       <div className="max-w-sm mx-auto">
+
+        <BackToMap focusId={id} className="mb-3" />
 
         {/* 헤더 */}
         <div className="text-center mb-5">

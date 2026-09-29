@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import BackToMap from '../components/BackToMap'
 
 export default function ForgotPasswordPage() {
   const navigate = useNavigate()
@@ -77,6 +78,8 @@ export default function ForgotPasswordPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 w-full max-w-sm">
+
+        <BackToMap className="mb-4" />
 
         <div className="text-center mb-6">
           <div className="text-4xl mb-2">🔑</div>

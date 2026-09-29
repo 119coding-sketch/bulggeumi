@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import Map from '../components/Map'
 import Sidebar from '../components/Sidebar'
 import SearchCard from '../components/SearchCard'
@@ -8,8 +8,21 @@ import useMapStore from '../store/useMapStore'
 
 export default function MapPage() {
   const navigate = useNavigate()
-  const { selectedItem } = useMapStore()
+  const { selectedItem, extinguishers, selectItem, flyTo } = useMapStore()
   const [showSidebar, setShowSidebar] = useState(false)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const focusId = searchParams.get('focus')
+
+  // /?focus=코드 로 들어오면 (신고 완료 → 지도에서 확인) 그 소화기함을 골라 그 자리로 이동.
+  // 소화기함 목록은 나눠서 불러오므로 해당 항목이 들어올 때까지 기다린다.
+  useEffect(() => {
+    if (!focusId) return
+    const item = extinguishers.find((e) => String(e.id) === String(focusId))
+    if (!item) return
+    selectItem(item)
+    flyTo(item)
+    setSearchParams({}, { replace: true })
+  }, [focusId, extinguishers, selectItem, flyTo, setSearchParams])
 
   // 신고는 누구나 — 로그인 없이 바로 신고 화면으로 (접수되면 센터 연락처 이메일로 알림)
   function handleReport() {

@@ -59,10 +59,11 @@ export default function TopBar() {
       {/* 상단 고정 바 */}
       <div className="fixed top-0 left-0 right-0 z-[9000] bg-red-600 text-white
         flex items-center justify-between px-4 py-2 shadow-md">
-        <div className="flex items-center gap-2">
+        {/* 로고 — 어느 화면에서든 누르면 지도로 */}
+        <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity" title="지도로 가기">
           <span className="text-base">🧯</span>
           <span className="font-bold text-sm hidden sm:block">불끄미</span>
-        </div>
+        </Link>
 
         {user ? (
           <div className="flex items-center gap-3">
