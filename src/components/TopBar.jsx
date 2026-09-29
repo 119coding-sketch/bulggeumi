@@ -65,6 +65,17 @@ export default function TopBar() {
           <span className="font-bold text-sm hidden sm:block">불끄미</span>
         </Link>
 
+        {/* 더 많은 AI 서비스 — 김작가 네임카드로 */}
+        <a
+          href="https://namecard-7081a.web.app/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mx-2 flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold text-white
+            bg-gradient-to-r from-indigo-500 to-violet-500 shadow hover:opacity-90 transition-opacity whitespace-nowrap"
+        >
+          ✨ <span className="hidden sm:inline">더 많은 AI 서비스 알아보기</span><span className="sm:hidden">AI 서비스 더보기</span> ›
+        </a>
+
         {user ? (
           <div className="flex items-center gap-3">
             <div className="text-right">
