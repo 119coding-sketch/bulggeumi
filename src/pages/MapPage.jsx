@@ -5,18 +5,16 @@ import Sidebar from '../components/Sidebar'
 import SearchCard from '../components/SearchCard'
 import TopBar from '../components/TopBar'
 import useMapStore from '../store/useMapStore'
-import useAuthStore from '../store/useAuthStore'
 
 export default function MapPage() {
   const navigate = useNavigate()
   const { selectedItem } = useMapStore()
-  const { user } = useAuthStore()
   const [showSidebar, setShowSidebar] = useState(false)
 
+  // 신고는 누구나 — 로그인 없이 바로 신고 화면으로 (접수되면 센터 연락처 이메일로 알림)
   function handleReport() {
     if (!selectedItem) return
-    if (user) navigate(`/report/${selectedItem.id}`)
-    else navigate(`/login?redirect=${encodeURIComponent(`/report/${selectedItem.id}`)}`)
+    navigate(`/report/${selectedItem.id}`)
   }
 
   return (

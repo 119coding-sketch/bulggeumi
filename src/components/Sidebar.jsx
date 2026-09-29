@@ -156,7 +156,7 @@ export default function Sidebar({ onClose }) {
               </button>
             ) : (
               <button
-                onClick={() => requireAuth(`/report/${selectedItem.id}`)}
+                onClick={() => navigate(`/report/${selectedItem.id}`)}   // 신고는 로그인 없이
                 className="block w-full text-center text-sm font-semibold py-2.5 rounded-xl
                   bg-red-600 text-white hover:bg-red-700 transition-colors"
               >

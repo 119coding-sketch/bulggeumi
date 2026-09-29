@@ -224,3 +224,5 @@ api/
 - [2026-04-12] / (지도)도 RequireAuth 보호 추가 — 미로그인 시 /login 이동
 - [2026-09-29] 지도 타일 CartoDB → OpenStreetMap 교체 — CARTO가 API 키 없는 요청에 "API KEY REQUIRED" 이미지만 내려줘 지도 배경이 안 나오던 문제 (마커만 표시됨)
 - [2026-09-29] 내장 관리자 계정 추가 (1@seoul.go.kr) — api/auth/[action].js BUILTIN_ADMIN, 이메일 인증 없이 로그인, 비밀번호는 bcrypt 해시만 저장, 비밀번호 변경·같은 이메일 가입 차단
+- [2026-09-29] 신고는 로그인 없이 — MapPage 신고 버튼·Sidebar 이상 신고하기의 로그인 요구 제거 (접수 시 센터 연락처 이메일로 알림은 그대로)
+- [2026-09-29] 로그인 화면 placeholder를 예시 계정(1@seoul.go.kr / 123456)으로 변경

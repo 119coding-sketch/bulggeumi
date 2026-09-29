@@ -58,7 +58,7 @@ export default function LoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="example@seoul.go.kr"
+              placeholder="1@seoul.go.kr"
               required
               autoComplete="email"
               className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5
@@ -72,7 +72,7 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="비밀번호 입력"
+              placeholder="123456"
               required
               autoComplete="current-password"
               className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5
