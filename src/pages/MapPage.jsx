@@ -8,7 +8,7 @@ import useMapStore from '../store/useMapStore'
 
 export default function MapPage() {
   const navigate = useNavigate()
-  const { selectedItem, extinguishers, selectItem, flyTo } = useMapStore()
+  const { selectedItem, extinguishers, selectItem, flyTo, setFilterStation, setFilterCenter } = useMapStore()
   const [showSidebar, setShowSidebar] = useState(false)
   const [searchParams, setSearchParams] = useSearchParams()
   const focusId = searchParams.get('focus')
@@ -19,10 +19,15 @@ export default function MapPage() {
     if (!focusId) return
     const item = extinguishers.find((e) => String(e.id) === String(focusId))
     if (!item) return
+    // 지도는 고른 소방서·센터의 마커만 그리므로 필터를 그 소화기함 쪽으로 맞춘다
+    if (item.station) {
+      setFilterStation(item.station)
+      if (item.center) setFilterCenter(item.center)
+    }
     selectItem(item)
     flyTo(item)
     setSearchParams({}, { replace: true })
-  }, [focusId, extinguishers, selectItem, flyTo, setSearchParams])
+  }, [focusId, extinguishers, selectItem, flyTo, setFilterStation, setFilterCenter, setSearchParams])
 
   // 신고는 누구나 — 로그인 없이 바로 신고 화면으로 (접수되면 센터 연락처 이메일로 알림)
   function handleReport() {
